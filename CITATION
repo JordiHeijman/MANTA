@@ -1,0 +1,15 @@
+To cite MANTA, please use:
+
+Maastricht antiarrhythmic drug evaluator (MANTA): a computational tool for better understanding of antiarrhythmic drugs
+Henry Sutanto, Lian Laudy, Michael Clerx, Dobromir Dobrev, Harry J.G.M. Crijns, Jordi Heijman
+2019, Pharmacological Research
+https://doi.org/10.1016/j.phrs.2019.104444
+
+A BibTeX entry for LaTeX users is
+
+@article{Sutanto2019MANTA,
+  title = {Maastricht antiarrhythmic drug evaluator ({MANTA}): a computational tool for better understanding of antiarrhythmic drugs},
+  author = {Sutanto, Henry and Laudy, Lian and Clerx, Michael and Dobrev, Dobromir and Crijs, Harry {J.G.M.} and Heijman, Jordi},
+  journal = {Pharmacological Research},
+  year = {2019}
+}
