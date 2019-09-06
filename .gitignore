@@ -1,0 +1,7 @@
+# Ignore compiled .pyc files
+*.pyc
+__pycache__
+
+# Ignore installation files
+*.egg-info
+
