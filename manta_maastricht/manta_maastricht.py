@@ -1,3 +1,4 @@
+from __future__ import print_function, division
 import sys
 import os
 sys.path.append('C:\\myokit\\myokit')
@@ -1146,7 +1147,7 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                     peakrefval = np.max(data1_ref_temp['output.Vm'])
                     ERP_ref = 0
                     state = s.state()
-                    print "Running S1S2 protocol - REF:Model1"
+                    print("Running S1S2 protocol - REF:Model1")
                     #data= np.zeros(100)
                     for ks2, cur_s1s2 in enumerate(s1s2):
                         p2 = myokit.Protocol()
@@ -1217,7 +1218,7 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                     peakrefval = np.max(data1_temp['output.Vm'])
                     ERP_ref = 0                    
                     state = s.state()
-                    print "Running S1S2 protocol - AAD1:Model1"
+                    print("Running S1S2 protocol - AAD1:Model1")
                     for ks2, cur_s1s2 in enumerate(s1s2):
                         p2 = myokit.Protocol()
                         p2.schedule(stimamp,10,stimdur,bcl,0) 
@@ -1284,7 +1285,7 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                     peakrefval = np.max(data1b_temp['output.Vm'])
                     ERP_ref = 0                           
                     state = s.state()
-                    print "Running S1S2 protocol - AAD2:Model1"
+                    print("Running S1S2 protocol - AAD2:Model1")
                     #data= np.zeros(100)
                     for ks2, cur_s1s2 in enumerate(s1s2):
                         p2 = myokit.Protocol()
@@ -1373,7 +1374,7 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                     peakrefval = np.max(data2_ref_temp['output.Vm'])
                     ERP_ref = 0
                     state = s.state()
-                    print "Running S1S2 protocol - REF:Model2"
+                    print("Running S1S2 protocol - REF:Model2")
                     for ks2, cur_s1s2 in enumerate(s1s2_2):
                         p2 = myokit.Protocol()
                         p2.schedule(stimamp,10,stimdur,bcl,0) 
@@ -1439,7 +1440,7 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                     peakrefval = np.max(data2_temp['output.Vm'])
                     ERP_ref = 0                      
                     state = s.state()
-                    print "Running S1S2 protocol - AAD1:Model2"
+                    print("Running S1S2 protocol - AAD1:Model2")
                     for ks2, cur_s1s2 in enumerate(s1s2_2):
                         p2 = myokit.Protocol()
                         p2.schedule(stimamp,10,stimdur,bcl,0) 
@@ -1505,7 +1506,7 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                     peakrefval = np.max(data2b_temp['output.Vm'])
                     ERP_ref = 0                           
                     state = s.state()
-                    print "Running S1S2 protocol - AAD2:Model2"
+                    print("Running S1S2 protocol - AAD2:Model2")
                     #data= np.zeros(100)
                     for ks2, cur_s1s2 in enumerate(s1s2_2):
                         p2 = myokit.Protocol()
@@ -1673,7 +1674,7 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
         
         with open(export_mdl1_top,'wb') as f1_top:
             for k, item in enumerate(data1):
-                #print k
+                #print(k)
                 data1_temp = data1[k]
                 data1b_temp = data1b[k]
                 data1_ref_temp = data1_ref[k] 
