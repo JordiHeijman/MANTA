@@ -3,24 +3,29 @@ import os
 from setuptools import setup, find_packages
 
 setup(
-      # Module name (lowercase)
-      name='manta_maastricht',
-      version='1.2',
-      description='manta_maastricht',
-	  url='http://www.jordiheijman.net/',
+    # Module name (lowercase)
+    name='manta_maastricht',
+    version='1.2',
+    description='manta_maastricht',
+    url='http://www.jordiheijman.net/',
 
-      # Packages to exclude
-      packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-      zip_safe=False,
+    # Packages to exclude
+    packages=find_packages(),
+    zip_safe=False,
 
-      # List of dependencies
-      install_requires=['numpy', 'myokit'],
+    # List of dependencies
+    install_requires=[
+        'myokit',
+        #'PyQt5',
+    ],
 
-      # Register as a shell script
-      entry_points = {
-        'console_scripts': ['manta_maastricht-run=manta_maastricht.command_line:main'],
-      },
+    # Register as a shell script
+    entry_points = {
+        'console_scripts': [
+            'manta_maastricht-run=manta_maastricht.command_line:main',
+        ],
+    },
 
-      # Include non-python files (via MANIFEST.in)
-	  include_package_data=True,
+    # Include non-python files (via MANIFEST.in)
+    include_package_data=True,
 )
