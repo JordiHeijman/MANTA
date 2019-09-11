@@ -32,7 +32,7 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
         self.statusBar()
         
         AADsdirectory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "AADs")
-        (_, _, filenames) = walk(AADsdirectory).next()
+        (_, _, filenames) = next(walk(AADsdirectory))
         for fn in filenames:
             if fn.endswith('.txt'):
                 self.cmbAAD.addItem(fn[:(len(fn)-4)])   
@@ -159,8 +159,9 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
         self.aad1_mdl2_bottom.stateChanged.connect(self.plotselection)
         self.aad2_mdl2_bottom.stateChanged.connect(self.plotselection)     
         
-        mdldirectory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
-        (_, _, filenames) = walk(mdldirectory).next()
+        mdldirectory = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'models')
+        (_, _, filenames) = next(walk(mdldirectory))
         for fn in filenames:
             if fn.endswith('.mmt'):
                 self.cmbModel1.addItem(fn[:(len(fn)-4)])
@@ -175,8 +176,13 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
         else:
             AAD = self.cmbAAD_3.currentText()
             conc = self.spinAADConcentration_3.value()
-            
-        with open (os.path.dirname(os.path.abspath(__file__)) + '/AADs/' + AAD + '.txt') as f:
+
+        filename = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'AADs',
+            AAD + '.txt',
+        )
+        with open(filename) as f:
             reader = csv.reader(f, delimiter='\t')
             for row in reader:
                 if row[0] == "INa":
@@ -235,7 +241,12 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
             AAD = self.cmbAAD_3.currentText()
             conc = self.spinAADConcentration_3.value()
 
-        with open (os.path.dirname(os.path.abspath(__file__)) + '/AADs/' + AAD + '.txt') as f:
+        filename = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'AADs',
+            AAD + '.txt',
+        )
+        with open(filename) as f:
             reader = csv.reader(f, delimiter='\t')
             for row in reader:
                 if row[0] == "ICaL":
@@ -685,8 +696,13 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
             self.spinAADConcentration.setValue(10.0)        
             self.spinAADConcentration.setValue(0.0)   
             self.ic50_aad1_lbl.setText(AAD)
-    
-            with open (os.path.dirname(os.path.abspath(__file__)) + '/AADs/' + AAD + '.txt') as f:
+
+            filename = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'AADs',
+                AAD + '.txt',
+            )
+            with open(filename) as f:
                 reader = csv.reader(f, delimiter='\t')
                 for row in reader:
                     if row[0] == "Antiarrhythmic drug class":
@@ -698,8 +714,13 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
             self.spinAADConcentration_3.setValue(10.0)              
             self.spinAADConcentration_3.setValue(0.0)        
             self.ic50_aad2_lbl.setText(AAD)            
-            
-            with open (os.path.dirname(os.path.abspath(__file__)) + '/AADs/' + AAD + '.txt') as f:
+
+            filename = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'AADs',
+                AAD + '.txt',
+            )
+            with open(filename) as f:
                 reader = csv.reader(f, delimiter='\t')
                 for row in reader:
                     if row[0] == "Antiarrhythmic drug class":
@@ -830,9 +851,11 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
         global data1_ref, data2_ref
         
         sending_cmb = self.sender()
-        mdldirectory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
         mdlname = sending_cmb.currentText() + ".mmt"
-        mdlpath = mdldirectory + "\\" + mdlname
+        mdlpath = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'models',
+            mdlname)
         print(mdlname)
                 
         if sending_cmb.objectName() == 'cmbModel1': 
@@ -916,7 +939,6 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
             if sending_cmb.objectName() == 'cmbOutput1Top':
                 if data1 != 1:
                     self.mplOutput1Top.axes.clear()
-                    self.mplOutput1Top.axes.hold(True)
                     for k, item in enumerate(data1):
                         cur_data1_ref = data1_ref[k]
                         cur_data1 = data1[k]
@@ -935,7 +957,6 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
             if sending_cmb.objectName() == 'cmbOutput1Bottom':
                 if data1 != 1:
                     self.mplOutput1Bottom.axes.clear()
-                    self.mplOutput1Bottom.axes.hold(True)
                     for k, item in enumerate(data1):
                         cur_data1_ref = data1_ref[k]
                         cur_data1 = data1[k]
@@ -955,7 +976,6 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
             if sending_cmb.objectName() == 'cmbOutput2Top':
                 if data2 != 1:
                     self.mplOutput2Top.axes.clear()
-                    self.mplOutput2Top.axes.hold(True)
                     for k, item in enumerate(data2):
                         cur_data2_ref = data2_ref[k]
                         cur_data2 = data2[k]
@@ -975,7 +995,6 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
             if sending_cmb.objectName() == 'cmbOutput2Bottom':
                 if data2 != 1:
                     self.mplOutput2Bottom.axes.clear()
-                    self.mplOutput2Bottom.axes.hold(True)
                     for k, item in enumerate(data2):
                         cur_data2_ref = data2_ref[k]
                         cur_data2 = data2[k]
@@ -1307,8 +1326,6 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                     self.lblAPDCaTModel1Alt_2.setText("%s\n AAD2 - ERP: %d ms" % (self.lblAPDCaTModel1Alt_2.text(), ERP_ref))
                
             if len(self.cmbOutput1Top.currentText()) > 1:
-                self.mplOutput1Top.axes.hold(True)
-                self.mplOutput1Bottom.axes.hold(True)
                 for k, item in enumerate(data1):
                     data1_temp = data1[k]
                     data1b_temp = data1b[k]
@@ -1534,8 +1551,6 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                 #    self.mplOutput2Bottom.draw()
     
             if len(self.cmbOutput2Top.currentText()) > 1:
-                self.mplOutput2Top.axes.hold(True)
-                self.mplOutput2Bottom.axes.hold(True)
                 for k, item in enumerate(data2):
                     data2_temp = data2[k]
                     data2b_temp = data2b[k]
@@ -1600,8 +1615,6 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
         if len(self.cmbOutput1Top.currentText()) > 1:
             self.mplOutput1Top.axes.clear()
             self.mplOutput1Bottom.axes.clear()          
-            self.mplOutput1Top.axes.hold(True)
-            self.mplOutput1Bottom.axes.hold(True)
             for k, item in enumerate(data1):
                 data1_temp = data1[k]
                 data1b_temp = data1b[k]
@@ -1626,8 +1639,6 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
         if len(self.cmbOutput2Top.currentText()) > 1:
             self.mplOutput2Top.axes.clear()
             self.mplOutput2Bottom.axes.clear()
-            self.mplOutput2Top.axes.hold(True)
-            self.mplOutput2Bottom.axes.hold(True)
             for k, item in enumerate(data2):
                 data2_temp = data2[k]
                 data2b_temp = data2b[k]
