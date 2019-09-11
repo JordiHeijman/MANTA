@@ -1,0 +1,17 @@
+#############################################################
+Antiarrhythmic drug profiles (==QUININE==)
+################### Ion channels & IC50 & Hill coefficient #####################
+ICaL	27.0	1
+IK1	1000000	1
+IKr	5.0	1
+IKs	37.0	1
+IKur	1000000	1
+INa	24.0	1
+INaL	11.0	0.4
+INaK	1000000	1
+INCX	1000000	1
+Ito	79.0	1
+######################## AAD INFO ###########################
+Antiarrhythmic drug class	Ia
+Effective range	0 - 100
+#############################################################

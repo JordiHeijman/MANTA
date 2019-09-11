@@ -1,0 +1,17 @@
+#############################################################
+Antiarrhythmic drug profiles (==DRONEDARONE==)
+################### Ion channels & IC50 & Hill coefficient #####################
+ICaL	4.0	1
+IK1	1000000	1
+IKr	2.0	1
+IKs	10.0	1
+IKur	1000000	1
+INa	1.0	1.7
+INaL	1000000	1
+INaK	1000000	1
+INCX	1000000	1
+Ito	1000000	1
+######################## AAD INFO ###########################
+Antiarrhythmic drug class	III
+Effective range	0 - 20
+#############################################################

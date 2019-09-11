@@ -1,0 +1,17 @@
+#############################################################
+Antiarrhythmic drug profiles (==VERNAKALANT==)
+################### Ion channels & IC50 & Hill coefficient #####################
+ICaL	84.0	1
+IK1	1000000	1
+IKr	20.0	1
+IKs	1000000	1
+IKur	15.0	1
+INa	90.0	1
+INaL	14.0	1
+INaK	1000000	1
+INCX	1000000	1
+Ito	15.0	1
+######################## AAD INFO ###########################
+Antiarrhythmic drug class	III
+Effective range	0 - 100
+#############################################################

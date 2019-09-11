@@ -1,0 +1,17 @@
+#############################################################
+Antiarrhythmic drug profiles (==NIFERIDIL==)
+################### Ion channels & IC50 & Hill coefficient #####################
+ICaL	100.0	1
+IK1	203.0	1
+IKr	0.0382	1
+IKs	28.0	1
+IKur	60.0	1
+INa	1000000	1
+INaL	1000000	1
+INaK	1000000	1
+INCX	1000000	1
+Ito	203.0	1
+######################## AAD INFO ###########################
+Antiarrhythmic drug class	III
+Effective range	0 - 300
+#############################################################

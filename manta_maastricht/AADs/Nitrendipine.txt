@@ -1,0 +1,17 @@
+#############################################################
+Antiarrhythmic drug profiles (==NITRENDIPINE==)
+################### Ion channels & IC50 & Hill coefficient #####################
+ICaL	0.025	1
+IK1	417.0	1
+IKr	20.0	1
+IKs	19.5	1
+IKur	1000000	1
+INa	21.5	1
+INaL	1000000	1
+INaK	1000000	1
+INCX	1000000	1
+Ito	1000000	1
+######################## AAD INFO ###########################
+Antiarrhythmic drug class	IV
+Effective range	0 - 25
+#############################################################

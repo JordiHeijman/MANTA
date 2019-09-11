@@ -1,0 +1,17 @@
+#############################################################
+Antiarrhythmic drug profiles (==PROPAFENONE==)
+################### Ion channels & IC50 & Hill coefficient #####################
+ICaL	1.55	1
+IK1	1000000	1
+IKr	0.44	1
+IKs	16.0	1
+IKur	1000000	1
+INa	2.5	1
+INaL	4.0	1
+INaK	1000000	1
+INCX	1000000	1
+Ito	7.2	1
+######################## AAD INFO ###########################
+Antiarrhythmic drug class	Ic
+Effective range	0 - 5
+#############################################################

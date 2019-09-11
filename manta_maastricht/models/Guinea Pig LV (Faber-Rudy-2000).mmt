@@ -1,0 +1,869 @@
+[[model]]
+author: Lian Laudy - Maastricht University, modified by Henry Sutanto -- Maastricht University
+desc: """
+    Action potential and contractility changes in [Na(+)](i) overloaded cardiac
+    myocytes: a simulation study
+    Catherine
+    Lloyd
+    Auckland Bioengineering
+    Institute
+    Model Status
+    This model has been curated and is known to run in
+    PCEnv and COR to recreate the published results.  The units have been
+    checked and are known to be consistent.  The CellML model has been based on
+    a translation of the LRd07 Matlab code which can be downloaded from the
+    Rudy lab website.  It is basically the Faber and Rudy 2000 model with the
+    addition of a transient potassium current (Ito) and an updated Irel
+    current.
+    Model Structure
+    ABSTRACT:  Sodium overload of cardiac cells can
+    accompany various pathologies and induce fatal cardiac arrhythmias. We
+    investigate effects of elevated intracellular sodium on the cardiac action
+    potential (AP) and on intracellular calcium using the Luo-Rudy model of a
+    mammalian ventricular myocyte. The results are: 1) During rapid pacing, AP
+    duration (APD) shortens in two phases, a rapid phase without Na(+)
+    accumulation and a slower phase that depends on [Na(+)](i). 2) The rapid
+    APD shortening is due to incomplete deactivation (accumulation) of I(Ks).
+    3) The slow phase is due to increased repolarizing currents I(NaK) and
+    reverse-mode I(NaCa), secondary to elevated [Na(+)](i). 4) Na(+)-overload
+    slows the rate of AP depolarization, allowing time for greater I(Ca(L))
+    activation; it also enhances reverse-mode I(NaCa). The resulting increased
+    Ca(2+) influx triggers a greater [Ca(2+)](i) transient. 5) Reverse-mode
+    I(NaCa) alone can trigger Ca(2+) release in a voltage and
+    [Na(+)](i)-dependent manner. 6) During I(NaK) block, Na(+) and Ca(2+)
+    accumulate and APD shortens due to enhanced reverse-mode I(NaCa);
+    contribution of I(K(Na)) to APD shortening is negligible. By slowing AP
+    depolarization (hence velocity) and shortening APD, Na(+)-overload acts to
+    enhance inducibility of reentrant arrhythmias. Shortened APD with elevated
+    [Ca(2+)](i) (secondary to Na(+)-overload) also predisposes the myocardium
+    to arrhythmogenic delayed afterdepolarizations.
+    The complete original paper
+    reference is cited below (but again please note that this CellML model is
+    not the exact Faber-Rudy model, instead it is based on a translation of the
+    LRd07 Matlab code which can be downloaded from the Rudy lab website.  It is
+    similar to the Faber and Rudy 2000 model with the addition of a transient
+    potassium current (Ito) and an updated Irel current.):
+    Action potential and
+    contractility changes in [Na(+)](i) overloaded cardiac myocytes: a
+    simulation study, Gregory M. Faber and Yoram Rudy, 2000, Biophysical
+    Journal, 78, 2392-2404.
+    PubMed ID: 10777735
+    cell diagram of the shaw and
+    viswanathan models showing ionic currents, pumps and exchangers within the
+    sarcolemma and the sarcoplasmic reticulum
+    A schematic diagram of the Faber
+    and Rudy 2000 cardiac myocyte model.
+    """
+"""
+###Changelog###
+Up to 22/03/2019 : 
+- State-dependent markov INa has been implemented 
+- Markov INa has been validated (drug-free, Flecainide, Lidocaine, Vernakalant) --> Further improvement might still be needed.
+"""         
+name: faber_2000
+# Initial values
+cell.V                                                = -8.51261964304059973e1
+fast_sodium_current_m_gate.m                          =  1.51329621199999993e-3
+fast_sodium_current_h_gate.h                          =  9.85318710338999981e-1
+fast_sodium_current_j_gate.j                          =  9.90731711844999974e-1
+L_type_Ca_channel_d_gate.d                            =  5.90656400000000019e-6
+L_type_Ca_channel_f_gate.f                            =  9.99390880783999958e-1
+T_type_Ca_channel_b_gate.b                            =  1.37827528799999992e-3
+T_type_Ca_channel_g_gate.g                            =  9.88597502434000019e-1
+rapid_delayed_rectifier_potassium_current_xr_gate.xr  =  2.07067204000000013e-4
+slow_delayed_rectifier_potassium_current_xs1_gate.xs1 =  7.13610238200000028e-3
+slow_delayed_rectifier_potassium_current_xs2_gate.xs2 =  3.95189968120000026e-2
+transient_outward_current_zdv_gate.zdv                =  1.45377823029999992e-2
+transient_outward_current_ydv_gate.ydv                =  9.99939405270000026e-1
+calcium_dynamics.JSR                                  = 8.290468
+calcium_dynamics.NSR                                  =  1.51675604128099994
+calcium_dynamics.CaT                                  =  1.54471100000000000e-2
+CICR_current.i_rel                                    = -4.74565000000000005e-19
+ionic_concentrations.Nai                              = 10
+ionic_concentrations.Ki                               =  1.44473230653346008e2
+"""
+I_Na_Markov.C3 = 0.99
+I_Na_Markov.C2 = 0.01
+I_Na_Markov.C1 = 0  
+I_Na_Markov.O  = 0  
+I_Na_Markov.IF = 0  
+I_Na_Markov.IC3 = 0 
+I_Na_Markov.IC2 = 0 
+I_Na_Markov.IM1 = 0 
+I_Na_Markov.IM2 = 0 
+
+I_Na_Markov.IFB = 0  
+I_Na_Markov.IC3B = 0 
+I_Na_Markov.IC2B = 0 
+I_Na_Markov.OB = 0
+"""
+I_Na_Markov.IC3 = 0
+I_Na_Markov.IC2 = 0
+I_Na_Markov.IF = 0
+I_Na_Markov.C3 = 1.00
+I_Na_Markov.C2 = 0
+I_Na_Markov.C1 = 0
+I_Na_Markov.O = 0
+I_Na_Markov.IS = 0
+I_Na_Markov.DpIC3 = 0
+I_Na_Markov.DpIC2 = 0
+I_Na_Markov.DpIF = 0
+I_Na_Markov.DpC3 = 0
+I_Na_Markov.DpC2 = 0
+I_Na_Markov.DpC1 = 0
+I_Na_Markov.DpO = 0
+I_Na_Markov.DpIS = 0
+I_Na_Markov.DpIT = 0
+I_Na_Markov.DIC3 = 0
+I_Na_Markov.DIC2 = 0
+I_Na_Markov.DIF = 0
+I_Na_Markov.DC3 = 0
+I_Na_Markov.DC2 = 0
+I_Na_Markov.DC1 = 0
+I_Na_Markov.DO = 0
+I_Na_Markov.DIS = 0
+I_Na_Markov.DIT = 0
+
+[parameters]
+ICaL_Block = 0.0
+IK1_Block = 0.0
+IKr_Block = 0.0
+IKs_Block = 0.0
+IKur_Block = 0.0
+INa_Block = 0.0
+INaL_Block = 0.0
+INaK_Block = 0.0
+INCX_Block = 0.0
+Ito_Block = 0.0
+
+Ca_o = 1.8 [mmol/L] : Extracellular Ca2+ concentration
+K_o = 4.5 [mmol/L] : Extracellular K+ concentration
+Na_o = 140 [mmol/L] : Extracellular Na+ concentration
+
+[output]
+Vm = cell.V
+Cai = 1000 * calcium_dynamics.Cai # in micromolar/l
+#dVdt = dot(cell.V)
+
+[ATP_sensitive_potassium_current]
+ATPi = 3
+    in [mM]
+GKbaraATP = g_K_ATP * pATP * (ionic_concentrations.Ko / 4 [mM]) ^ nATP
+    in [mS/uF]
+g_K_ATP = i_K_ATP_on * 0.000193 [mS/uF] / nicholsarea
+    in [mS/uF]
+hATP = 2
+    in [1]
+i_K_ATP = GKbaraATP * (cell.V - time_independent_potassium_current.E_K)
+    in [A/F]
+i_K_ATP_on = 1
+    in [1]
+kATP = 0.00025
+    in [mM]
+nATP = 0.24
+    in [1]
+nicholsarea = 5e-5
+    in [1]
+pATP = 1 / (1 + (ATPi / kATP) ^ hATP)
+    in [1]
+
+[CICR_current]
+I_relss = L_type_Ca_channel.i_CaCa * alpha_rel / (1 + (K_relss / calcium_dynamics.Ca_JSR) ^ qn)
+    in [mM/ms]
+K_relss = 1
+    in [mM]
+alpha_rel = kappa * tau
+    in [s^3*A*mol/g/m^5]
+dot(i_rel) = -(I_relss + i_rel) / tau_rel
+    in [mM/ms]
+kappa = 0.125
+    in [mM/mV/ms]
+qn = 9
+    in [1]
+tau = 4.75
+    in [ms]
+tau_rel = tau / (1 + 0.0123 [mM] / calcium_dynamics.Ca_JSR)
+    in [ms]
+
+[L_type_Ca_channel]
+I_CaCa = P_Ca * 2 ^ 2 * cell.V * cell.F ^ 2 / (cell.R * cell.T) * (gamma_Cai * calcium_dynamics.Cai * exp(2 * cell.V * cell.F / (cell.R * cell.T)) - gamma_Cao * calcium_dynamics.Cao) / (exp(2 * cell.V * cell.F / (cell.R * cell.T)) - 1)
+    in [A/F]
+I_CaK = P_K * 1 ^ 2 * cell.V * cell.F ^ 2 / (cell.R * cell.T) * (gamma_Ki * ionic_concentrations.Ki * exp(1 * cell.V * cell.F / (cell.R * cell.T)) - gamma_Ko * ionic_concentrations.Ko) / (exp(1 * cell.V * cell.F / (cell.R * cell.T)) - 1)
+    in [A/F]
+I_CaNa = P_Na * 1 ^ 2 * cell.V * cell.F ^ 2 / (cell.R * cell.T) * (gamma_Nai * ionic_concentrations.Nai * exp(1 * cell.V * cell.F / (cell.R * cell.T)) - gamma_Nao * ionic_concentrations.Nao) / (exp(1 * cell.V * cell.F / (cell.R * cell.T)) - 1)
+    in [A/F]
+P_Ca = 0.00054
+    in [L/F/ms]
+P_K = 1.93e-7
+    in [L/F/ms]
+P_Na = 6.75e-7
+    in [L/F/ms]
+gamma_Cai = 1
+    in [1]
+gamma_Cao = 0.341
+    in [1]
+gamma_Ki = 0.75
+    in [1]
+gamma_Ko = 0.75
+    in [1]
+gamma_Nai = 0.75
+    in [1]
+gamma_Nao = 0.75
+    in [1]
+i_CaCa = L_type_Ca_channel_d_gate.d * L_type_Ca_channel_f_gate.f * L_type_Ca_channel_f_Ca_gate.f_Ca * I_CaCa
+    in [A/F]
+i_CaK = L_type_Ca_channel_d_gate.d * L_type_Ca_channel_f_gate.f * L_type_Ca_channel_f_Ca_gate.f_Ca * I_CaK
+    in [A/F]
+i_CaNa = L_type_Ca_channel_d_gate.d * L_type_Ca_channel_f_gate.f * L_type_Ca_channel_f_Ca_gate.f_Ca * I_CaNa
+    in [A/F]
+i_Ca_L = (1.0 - parameters.ICaL_Block) * (i_CaCa + i_CaK + i_CaNa)
+    in [A/F]
+
+[L_type_Ca_channel_d_gate]
+E0_d = cell.V + 10 [mV]
+    in [mV]
+alpha_d = d_infinity / tau_d
+    in [mS/uF]
+beta_d = (1 - d_infinity) / tau_d
+    in [mS/uF]
+dot(d) = alpha_d * (1 - d) - beta_d * d
+    in [1]
+d_infinity = 1 / (1 + exp(-E0_d / 6.24 [mV]))
+    in [1]
+tau_d = 1 [ms] * d_infinity * (1 - exp(-E0_d / 6.24 [mV])) / (0.035 [1/mV] * E0_d)
+    in [ms]
+
+[L_type_Ca_channel_f_Ca_gate]
+Km_Ca = 0.0006
+    in [mM]
+f_Ca = 1 / (1 + calcium_dynamics.Cai / Km_Ca)
+    in [1]
+
+[L_type_Ca_channel_f_gate]
+alpha_f = f_infinity / tau_f
+    in [mS/uF]
+beta_f = (1 - f_infinity) / tau_f
+    in [mS/uF]
+dot(f) = alpha_f * (1 - f) - beta_f * f
+    in [1]
+f_infinity = 1 / (1 + exp((cell.V + 32 [mV]) / 8 [mV])) + 0.6 / (1 + exp((50 [mV] - cell.V) / 20 [mV]))
+    in [1]
+tau_f = 1 [ms] / (0.0197 * exp(-(0.0337 [1/mV] * (cell.V + 10 [mV])) ^ 2) + 0.02)
+    in [ms]
+
+[Na_Ca_exchanger]
+c1 = 0.00025
+    in [A/F]
+c2 = 0.0001
+    in [1]
+gamma = 0.15
+    in [1]
+i_NaCa = (1.0 - parameters.INCX_Block) * c1 * exp((gamma - 1) * cell.V * cell.F / (cell.R * cell.T)) * (exp(cell.V * cell.F / (cell.R * cell.T)) * ionic_concentrations.Nai ^ 3 * calcium_dynamics.Cao - ionic_concentrations.Nao ^ 3 * calcium_dynamics.Cai) / (1 [mol^4/m^12] + c2 * exp((gamma - 1) * cell.V * cell.F / (cell.R * cell.T)) * (exp(cell.V * cell.F / (cell.R * cell.T)) * ionic_concentrations.Nai ^ 3 * calcium_dynamics.Cao + ionic_concentrations.Nao ^ 3 * calcium_dynamics.Cai))
+    in [A/F]
+
+[T_type_Ca_channel]
+g_CaT = 0.05
+    in [mS/uF]
+i_Ca_T = g_CaT * T_type_Ca_channel_b_gate.b * T_type_Ca_channel_b_gate.b * T_type_Ca_channel_g_gate.g * (cell.V - calcium_background_current.E_Ca)
+    in [A/F]
+
+[T_type_Ca_channel_b_gate]
+dot(b) = (b_inf - b) / tau_b
+    in [1]
+b_inf = 1 / (1 + exp(-(cell.V + 14 [mV]) / 10.8 [mV]))
+    in [1]
+tau_b = 3.7 [ms] + 6.1 [ms] / (1 + exp((cell.V + 25 [mV]) / 4.5 [mV]))
+    in [ms]
+
+[T_type_Ca_channel_g_gate]
+dot(g) = (g_inf - g) / tau_g
+    in [1]
+g_inf = 1 / (1 + exp((cell.V + 60 [mV]) / 5.6 [mV]))
+    in [1]
+tau_g = piecewise(cell.V <= 0 [mV], -0.875 [ms/mV] * cell.V + 12 [ms], 12 [ms])
+    in [ms]
+
+[calcium_background_current]
+E_Ca = cell.R * cell.T / (2 * cell.F) * log(calcium_dynamics.Cao / calcium_dynamics.Cai)
+    in [mV]
+g_Cab = 0.003016
+    in [mS/uF]
+i_Ca_b = g_Cab * (cell.V - E_Ca)
+    in [A/F]
+
+[calcium_dynamics]
+CMDN_max = 0.05
+    in [mM]
+CSQN_max = 10
+    in [mM]
+dot(CaT) = -1 [uF/cm^2] * geometry.A_cap * (L_type_Ca_channel.i_CaCa + T_type_Ca_channel.i_Ca_T + sarcolemmal_calcium_pump.i_p_Ca + calcium_background_current.i_Ca_b + -2 * Na_Ca_exchanger.i_NaCa) / (2 * geometry.V_myo * cell.F) + CICR_current.i_rel * geometry.V_JSR / geometry.V_myo + (i_leak - i_up) * geometry.V_NSR / geometry.V_myo
+    in [mM]
+Ca_JSR = (sqrt(bjsr ^ 2 + 4 * cjsr) - bjsr) / 2
+    in [mM]
+Ca_NSR_max = 15
+    in [mM]
+Cai = 2 / 3 * sqrt(bmyo ^ 2 - 3 * cmyo) * cos(acos((9 * bmyo * cmyo - (2 * bmyo ^ 3 + 27 * dmyo)) / (2 * sqrt((bmyo ^ 2 - 3 * cmyo) ^ 3))) / 3) - bmyo / 3
+    in [mM]
+Cao = parameters.Ca_o
+    in [mM]
+I_up = 0.00875
+    in [mM/ms]
+dot(JSR) = i_tr - CICR_current.i_rel
+    in [mM]
+K_leak = I_up / Ca_NSR_max
+    in [mS/uF]
+K_mCMDN = 0.00238
+    in [mM]
+K_mCSQN = 0.8
+    in [mM]
+K_mTRPN = 0.0005
+    in [mM]
+K_mup = 0.00092
+    in [mM]
+dot(NSR) = -i_tr * geometry.V_JSR / geometry.V_NSR - i_leak + i_up
+    in [mM]
+TRPN_max = 0.07
+    in [mM]
+bjsr = CSQN_max + K_mCSQN + -JSR
+    in [mM]
+bmyo = CMDN_max + TRPN_max + K_mCMDN + K_mTRPN + -CaT
+    in [mM]
+cjsr = K_mCSQN * JSR
+    in [mM^2]
+cmyo = K_mCMDN * K_mTRPN + TRPN_max * K_mCMDN + CMDN_max * K_mTRPN + -CaT * (K_mTRPN + K_mCMDN)
+    in [mM^2]
+dmyo = -K_mTRPN * K_mCMDN * CaT
+    in [mM^3]
+i_leak = K_leak * NSR
+    in [mM/ms]
+i_tr = (NSR - Ca_JSR) / tau_tr
+    in [mM/ms]
+i_up = I_up * Cai / (Cai + K_mup)
+    in [mM/ms]
+tau_tr = 120
+    in [ms]
+
+[membrane]
+markov_Na = 1
+
+[cell]
+markov_Na = membrane.markov_Na 
+F = 96485
+    in [C/mol]
+stim_amplitude = -80
+    in [A/F]
+level = 0 bind pace
+I_st = stim_amplitude * level
+    in [A/F]
+R = 8314
+    in [mJ/mol/K]
+T = 310
+    in [K]
+dot(V) = dVdt
+    in [mV]
+dVdt = -((if(markov_Na == 1, I_Na_Markov.I_Na_tot, fast_sodium_current.i_Na)) + L_type_Ca_channel.i_Ca_L + T_type_Ca_channel.i_Ca_T + rapid_delayed_rectifier_potassium_current.i_Kr + slow_delayed_rectifier_potassium_current.i_Ks + sodium_activated_potassium_current.i_K_Na + time_independent_potassium_current.i_K1 + ATP_sensitive_potassium_current.i_K_ATP + transient_outward_current.i_to + plateau_potassium_current.i_Kp + Na_Ca_exchanger.i_NaCa + sarcolemmal_calcium_pump.i_p_Ca + sodium_background_current.i_Na_b + calcium_background_current.i_Ca_b + sodium_potassium_pump.i_NaK + non_specific_calcium_activated_current.i_ns_Ca + I_st)
+    in [A/F]
+
+[environment]
+time = 0 bind time
+    in [ms]
+
+[fast_sodium_current]
+E_Na = cell.R * cell.T / cell.F * log(ionic_concentrations.Nao / ionic_concentrations.Nai)
+    in [mV]
+g_Na = 16
+    in [mS/uF]
+i_Na = (1.0 - parameters.INa_Block) * g_Na * fast_sodium_current_m_gate.m ^ 3 * fast_sodium_current_h_gate.h * fast_sodium_current_j_gate.j * (cell.V - E_Na)
+    in [A/F]
+
+[fast_sodium_current_h_gate]
+alpha_h = piecewise(cell.V < -40 [mV], 0.135 [mS/uF] * exp((80 [mV] + cell.V) / -6.8 [mV]), 0 [mS/uF])
+    in [mS/uF]
+beta_h = piecewise(cell.V < -40 [mV], 3.56 [mS/uF] * exp(0.079 [1/mV] * cell.V) + 310000 [mS/uF] * exp(0.35 [1/mV] * cell.V), 1 [mS/uF] / (0.13 * (1 + exp((cell.V + 10.66 [mV]) / -11.1 [mV]))))
+    in [mS/uF]
+dot(h) = alpha_h * (1 - h) - beta_h * h
+    in [1]
+
+[fast_sodium_current_j_gate]
+alpha_j = piecewise(cell.V < -40 [mV], -(127140 [1/mV/ms] * exp(0.2444 [1/mV] * cell.V) + 3.474e-5 [1/mV/ms] * exp(-0.04391 [1/mV] * cell.V)) * (cell.V + 37.78 [mV]) / (1 + exp(0.311 [1/mV] * (cell.V + 79.23 [mV]))), 0 [mS/uF])
+    in [mS/uF]
+beta_j = piecewise(cell.V < -40 [mV], 0.1212 [mS/uF] * exp(-0.01052 [1/mV] * cell.V) / (1 + exp(-0.1378 [1/mV] * (cell.V + 40.14 [mV]))), 0.3 [mS/uF] * exp(-2.535e-7 [1/mV] * cell.V) / (1 + exp(-0.1 [1/mV] * (cell.V + 32 [mV]))))
+    in [mS/uF]
+dot(j) = alpha_j * (1 - j) - beta_j * j
+    in [1]
+
+[fast_sodium_current_m_gate]
+E0_m = cell.V + 47.13 [mV]
+    in [mV]
+alpha_m = 0.32 [1/mV/ms] * E0_m / (1 - exp(-0.1 [1/mV] * E0_m))
+    in [mS/uF]
+beta_m = 0.08 [mS/uF] * exp(-cell.V / 11 [mV])
+    in [mS/uF]
+dot(m) = alpha_m * (1 - m) - beta_m * m
+    in [1]
+
+########################################################
+[I_Na_Markov]
+# this state dependence of Na channel was from Moreno et al 2011 (Sci. Transl. Med)
+# contains free, charged, neutral drug
+
+class1_drug_cat = 3
+Lidocaine_fact = if(class1_drug_cat==2 and new_drug_mode==0, 1, 0) ## example for Ib
+Flecainide_fact = if(class1_drug_cat==3 and new_drug_mode==0, 1, 0) ## example for Ic
+Vernakalant_fact = if(class1_drug_cat==4 and new_drug_mode==0, 1, 0) 
+
+x1 = 0.36074068186699165
+x2 = 0.67947767489963651
+x3 = 1.4181189960289569
+x4 = 0.6642892365971278
+x5 = 2.2262983343828586
+x6 = 2.7462799132769664
+x7 = 3.7291786844606944
+x8 = 0.76114048789324507
+x9 = 0.51941826904556065
+x10 = 0.16354687278047286
+x11 = 0.78283058240715697
+x12 = 0.95431854763454882
+x13 = 1.4945119912466263
+x14 = 1.0328344
+x15 = 0.99481919
+x16 = 1.00254845
+x17 = 1.01096423
+x18 = 1.97052465
+x19 = 1.0572724565237737
+x20 = 0.755084427579001
+x21 = 0.9911675441375104
+x22 = 1.1141648721471809
+x23 = 0.7400221830311837
+x24 = 0.6867087130674105
+x25 = 0.9613389122782059
+
+f1 = 0.98905197152128432 #15802.517082265076
+f2 = 1.0029999573070008 #11212.49445307003
+f3 = 1.0057171391006117 #1.0835911457972944
+f4 = 1.0309175665603671 #4.7213138217409707
+f5 = 1.0299031549314341 #1.1886854610200599
+f6 = 0.98248304619869919 #1.1293915676022106
+f7 = 1.0330018497130766 #0.98647121091698153
+f8 = 10.59006690919061 #0.54542349779755606
+f9 = 1.0105899110018943 #1.020713680006784
+f10 = 0.86972764935354852 #2.6609951303941308
+f11 = 1.0220717998167994 #1.1411905523331658
+f12 = 0.98905196692533548 #5.3540204782968566
+f13 = 1.0017367820958414 #1.028853996176295
+f14 = 0.99268091390208379 #1.0033797797467918
+
+l1 = 1.36922845112808845e+04
+l2 = 1.36922845112808845e+04
+l3 = 9.75801811222358206e-01
+l4 = 4.78855031291120348e+00
+l5 = 9.75801811222358206e-01
+l6 = 9.78288593348167645e-01
+l7 = 9.78288593348167645e-01
+l8 = 9.05788719283946997e-01
+l9 = 9.05788719283946997e-01
+l10 = 4.84105307990853273e+00
+
+v1 = 7170.4622644564224
+v2 = 15352.068978379524
+v3 = 0.78329295519833497
+v4 = 6.2271179964787571
+v5 = 22.10184390723893
+v6 = 1.5107146709941404
+v7 = 1.0935642293370962
+v8 = 0.65910138578597266
+v9 = 2.3700350948377
+v10 = 6.2071593539114822
+v11 = 0
+v12 = 0
+v13 = 0
+v14 = 0
+
+#### new drug components ####
+new_drug_mode = 0
+n_diffusion = 0
+n_kd_open = 0
+n_k_off = 0
+n_ki_off = 0
+n_kc_off = 0
+n_p22 = 0
+n_p23 = 0
+n_p24 = 0
+n_p25 = 0
+n_p26 = 0
+n_p27 = 0
+n_p28 = 0
+n_p29 = 0
+n_p30 = 0
+n_p31 = 0
+n_p32 = 0
+n_p33 = 0
+n_p34 = 0
+n_p35 = 0
+
+diffusion = ((new_drug_mode*n_diffusion) + (Flecainide_fact*5500) + (Lidocaine_fact*500) + (Vernakalant_fact*500)) #in [1 / M ms]
+kd_open = ((new_drug_mode*n_kd_open) + (Flecainide_fact*11.2e-6) + (Lidocaine_fact*318e-6) + (Vernakalant_fact*318e-6)) * exp(-0.7 * cell.V * cell.F / (cell.R * cell.T))
+conc = 0
+pH = 7.4
+pKa_newdrug = 7.4
+pKa_Lidocaine = 7.6
+pKa_Flecainide = 9.3
+pKa_Vernakalant = 5.4
+#pH = (if(Lidocaine_fact==1, pH_Lidocaine, 0)) + (if(Flecainide_fact==1, pH_Flecainide, 0)) + (if(new_drug_mode==1, pH_newdrug, 0))
+pKa = (if(Vernakalant_fact==1, pKa_Vernakalant, 0)) + (if(Lidocaine_fact==1, pKa_Lidocaine, 0)) + (if(Flecainide_fact==1, pKa_Flecainide, 0)) + (if(new_drug_mode==1, pKa_newdrug, 0))
+portion = 1/(1+10^(pH-pKa))
+conc_dplus = portion * conc
+conc_d = (1-portion) * conc
+
+kon = conc_dplus * diffusion #if(conc_dplus>0.0001, conc_dplus * diffusion, 1e-8) #### for protonated drugs
+kcon = kon
+koff = kd_open * diffusion
+kcoff = koff
+
+k_on = conc_d * diffusion #if(conc_d>0.0001, , 1e-8) #### for neutral drugs
+k_off = ((new_drug_mode*n_k_off) + (Flecainide_fact*400e-6) + (Lidocaine_fact*400e-6) + (Vernakalant_fact*400e-6)) * diffusion
+ki_on = k_on / 2
+ki_off = ((new_drug_mode*n_ki_off) + (Flecainide_fact*5.4e-6) + (Lidocaine_fact*3.4e-6) + (Vernakalant_fact*3.4e-6)) * diffusion
+kc_on = k_on / 2
+kc_off = ((new_drug_mode*n_kc_off) + (Flecainide_fact*800e-6) + (Lidocaine_fact*900e-6) + (Vernakalant_fact*900e-6)) * diffusion
+
+Tfactor = 1 / (3 ^ ((37 - (cell.T - 273)) / 10.0)) #0.19245
+
+# Transition rates (ms-1)  
+a11 = Tfactor * p1 / (p2 * exp(-(cell.V - actshift) / p3) + p6 * exp(-(cell.V - actshift) / p7))
+a12 = Tfactor * p1 / (p2 * exp(-(cell.V - actshift) / p4) + p6 * exp(-(cell.V - actshift) / p7))
+a13 = Tfactor * p1 / (p2 * exp(-(cell.V - actshift) / p5) + p6 * exp(-(cell.V - actshift) / p7))
+b11 = Tfactor * p8 * exp(-(cell.V - actshift) / p9)
+b12 = Tfactor * p10 * exp(-(cell.V - actshift - p11) / p9)
+b13 = Tfactor * p12 * exp(-(cell.V - actshift - p13) / p9)
+#a3 = p14 * exp(-cell.V / p15)
+#b3 = p16 * exp(cell.V / p17)
+#aa = a3 / (a3 + b3)
+#tau = 1 / (a3 + b3)
+a3_ss = 1/(1+exp((cell.V - p14_new) / p15_new))
+a3_tau = h1 + p01 * exp(p16_new * (cell.V - p14_new)) / (1 + exp(p17_new * (cell.V - p14_new)))
+a3 = Tfactor * a3_ss / a3_tau
+b3 = Tfactor * (1 - a3_ss) / a3_tau
+a2 = Tfactor * p18 * exp(cell.V / p19)
+b2 = (a13*a2*a3) / (b13*b3)
+ax = p20 * a2
+bx = p21 * a3
+
+a13c = p22 * a13
+b13c = if(kon>0, (b13 * kcon * koff * a13c) / (kon * kcoff * a13), 0)
+a13n = p23 * a13
+b13n = if(k_on>0, (b13 * kc_on * a13n * k_off) / (kc_off * a13 * k_on), 0)
+ax1 = p24 * ax
+bx1 = p25 * bx
+ax2 = p26 * ax
+bx2 = if(ki_on>0, (bx * k_on * ax2 * ki_off) / (ax * ki_on * k_off), 0)
+a22 = p27 * a2
+a_22 = p28 * a2
+b22 = if(b13c>0, (a13c * a22 * a33) / (b13c * b33), 0)
+b_22 = if(b13n>0, (a_33 * a13n * a_22) / (b_33 * b13n), 0)
+b33 = p29 * b3
+b_33 = p30 * b3
+a33 = p31 * a3
+a_33 = if(ki_on>0, (ki_off * a3 * kc_on * b_33) / (ki_on * kc_off * b3), 0)
+## DIT or DpIT ONLY in Lidocaine (Inactivated, Trapped state)
+a44 = p32 * a2
+b44 = p33 * a3
+a_44 = p34 * a2
+b_44 = p35 * a2
+
+actshift = -15*x19
+h1 = 2*x20
+p1 = 8.5539*x1
+p2 = 7.4392e-2*x2
+p3 = 17.0*x3
+p4 = 15.0*x4
+p5 = 12.0*x5
+p6 = 2.0373e-1*x6
+p7 = 150*x7
+p8 = 7.5215e-2*x8
+p9 = 20.3*x9
+p10 = 2.7574*x10
+p11 = 5*x11
+p12 = 4.7755e-1*x12
+p13 = 10*x13
+p14 = 5.1458e-6 #5.1458e-6 *1.0325463712122342
+p15 = 8.2471 #0.8*8.2471 * 0.10401603829601243
+p16 = 6.1205 #6.1205 * 0.96668483687506801
+p17 = 12.542 #0.8*12.542 * 1.0908872227689068
+p18 = 13.370*x14
+p19 = 43.749*x15
+p20 = 3.4229e-2*x16
+p21 = 1.7898e-2*x17
+p14_new = -70*x21
+p15_new = 3.5*x22
+p16_new = 0.052 * 2.9*x23
+p17_new = 0.132 * 1.9*x24
+p01 = 41*x25
+
+p22 = (new_drug_mode*n_p22) + (Flecainide_fact*3.6324e-3*f1) + (Lidocaine_fact*5.6974e-03*l1) + (Vernakalant_fact*5.6974e-03*v1) #3.6324e-3
+p23 = (new_drug_mode*n_p23) + (Flecainide_fact*2.6452*f2) + (Lidocaine_fact*8.4559e+01*l2) + (Vernakalant_fact*8.4559e+01*v2) #2.6452
+p24 = (new_drug_mode*n_p24) + (Flecainide_fact*5.7831e-5*f3) + (Lidocaine_fact*6.3992e-07*l3) + (Vernakalant_fact*6.3992e-07*v3) #5.7831e-5
+p25 = (new_drug_mode*n_p25) + (Flecainide_fact*1.6689e-8*f4) + (Lidocaine_fact*1.3511e+00*l4) + (Vernakalant_fact*1.3511e+00*v4) #1.6689e-8
+p26 = (new_drug_mode*n_p26) + (Flecainide_fact*2.6126e-01*f5) + (Lidocaine_fact*1.3110e-01*l5) + (Vernakalant_fact*1.3110e-01*v5) #2.6126e-01
+p27 = (new_drug_mode*n_p27) + (Flecainide_fact*1.4847e3*f6) + (Lidocaine_fact*6.7067e-06*l6) + (Vernakalant_fact*6.7067e-06*v6) #1.4847e3
+p28 = (new_drug_mode*n_p28) + (Flecainide_fact*4.2385e+01*f7) + (Lidocaine_fact*1.7084e-05*l7) + (Vernakalant_fact*1.7084e-05*v7) #4.2385e+01
+p29 = (new_drug_mode*n_p29) + (Flecainide_fact*1.7352e-6*f8) + (Lidocaine_fact*1.9698e-05*l8) + (Vernakalant_fact*1.9698e-05*v8) #1.7352e-6
+p30 = (new_drug_mode*n_p30) + (Flecainide_fact*2.1181e+00*f9) + (Lidocaine_fact*4.8477*l9) + (Vernakalant_fact*4.8477*v9) #2.1181e+00
+p31 = (new_drug_mode*n_p31) + (Flecainide_fact*6.7505e-05*f10) + (Lidocaine_fact*3.2976*l10) + (Vernakalant_fact*3.2976*v10) #6.7505e-05
+p32 = (new_drug_mode*n_p32) + (Flecainide_fact*2.4135*f11) + (Lidocaine_fact*0) + (Vernakalant_fact*2.4135*v11)
+p33 = (new_drug_mode*n_p33) + (Flecainide_fact*4.9001e-2*f12) + (Lidocaine_fact*0) + (Vernakalant_fact*4.9001e-2*v12) 
+p34 = (new_drug_mode*n_p34) + (Flecainide_fact*1.0326e-03*f13) + (Lidocaine_fact*0) + (Vernakalant_fact*1.0326e-03*v13) 
+p35 = (new_drug_mode*n_p35) + (Flecainide_fact*2.1378e-02*f14) + (Lidocaine_fact*0) + (Vernakalant_fact*2.1378e-02*v14)
+
+dot(IC3) = -IC3 * (a11 + a3 + ki_on) + IC2 * b11 + C3 * b3 + ki_off * DIC3
+dot(IC2) = -IC2 * (b11 + a3 + a12 + ki_on) + IC3 * a11 + IF * b12 + C2 * b3 + ki_off * DIC2
+dot(IF) = -IF * (b12 + a3 + b2 + ki_on) + IC2 * a12 + C1 * b3 + O * a2 + ki_off * DIF
+dot(C3) = -C3 * (b3 + a11 + kcon + kc_on) + IC3 * a3 + C2 * b11 + DpC3 * kcoff + DC3 * kc_off
+dot(C2) = -C2 * (b11 + b3 + a12 + kcon + kc_on) + C3 * a11 + IC2 * a3 + C1 * b12 + DpC2 * kcoff + DC2 * kc_off
+dot(C1) = -C1 * (b12 + b3 + a13 + kcon + kc_on) + C2 * a12 + IF * a3 + O * b13 + DpC1 * kcoff + DC1 * kc_off
+dot(O) = -O * (b13 + a2 + ax + kon + k_on) + C1 * a13 + IF * b2 + IS * bx + DpO * koff + DO * k_off
+dot(IS) = -IS * (bx + ki_on) + O * ax + DIS * ki_off
+
+dot(DpIC3) = -DpIC3 * (a33 + a11) + DpIC2 * b11 + DpC3 * b33
+dot(DpIC2) = -DpIC2 * (b11 + a33 + a12) + DpIC3 * a11 + DpIF * b12 + DpC2 * b33
+dot(DpIF) = -DpIF * (b12 + a33 + b22 + a44) + DpIC2 * a12 + DpC1 * b33 + DpO * a22 + DpIT * b44
+dot(DpC3) = -DpC3 * (b33 + a11 + kcoff) + DpIC3 * a33 + DpC2 * b11 + C3 * kcon
+dot(DpC2) = -DpC2 * (b11 + b33 + a12 + kcoff) + DpC3 * a11 + DpIC2 * a33 + DpC1 * b12 + C2 * kcon
+dot(DpC1) = -DpC1 * (b12 + b33 + a13c + kcoff) + DpC2 * a12 + DpIF * a33 + DpO * b13c + C1 * kcon
+dot(DpO) = -DpO * (b13c + a22 + ax1 + koff) + DpC1 * a13c + DpIF * b22 + DpIS * bx1 + O * kon
+dot(DpIS) = -DpIS * (bx1) + DpO * ax1
+dot(DpIT) = -DpIT * b44 + DpIF * a44
+
+dot(DIC3) = -DIC3 * (a_33 + a11 + ki_off) + DIC2 * b11 + DC3 * b_33 + ki_on * IC3
+dot(DIC2) = -DIC2 * (b11 + a_33 + a12 + ki_off) + DIC3 * a11 + DIF * b12 + DC2 * b_33 + ki_on * IC2
+dot(DIF) = -DIF * (b12 + a_33 + b_22 + a_44 + ki_off) + DIC2 * a12 + DC1 * b_33 + DO * a_22 + DIT * b_44 + ki_on * IF
+dot(DC3) = -DC3 * (b_33 + a11 + kc_off) + DIC3 * a_33 + DC2 * b11 + C3 * kc_on
+dot(DC2) = -DC2 * (b11 + b_33 + a12 + kc_off) + DC3 * a11 + DIC2 * a_33 + DC1 * b12 + C2 * kc_on
+dot(DC1) = -DC1 * (b12 + b_33 + a13n + kc_off) + DC2 * a12 + DIF * a_33 + DO * b13n + C1 * kc_on
+dot(DO) = -DO * (b13n + a_22 + ax2 + k_off) + DC1 * a13n + DIF * b_22 + DIS * bx2 + O * k_on
+dot(DIS) = -DIS * (bx2 + ki_off) + DO * ax2 + IS * ki_on
+dot(DIT) = -DIT * b_44 + DIF * a_44
+
+#E_Na = (phys.RTF) * log(138/10)
+E_Na = cell.R * cell.T / cell.F * log(ionic_concentrations.Nao / ionic_concentrations.Nai)
+    in [mV]
+g_Na = x18*7.8 *1.0 *4.5 #7.8 *1.0 * 1.76#* 48.33
+    in [1/ms]
+I_Na_tot = (1 - parameters.INa_Block) * g_Na * O * (cell.V - E_Na)
+    in [pA]
+
+########################################################
+[geometry]
+A_cap = 0.0001534
+    in [cm^2]
+V_JSR = 0.0048 * volume
+    in [uL]
+V_NSR = 0.0552 * volume
+    in [uL]
+V_myo = 0.68 * volume
+    in [uL]
+preplength = 0.1
+    in [mm]
+radius = 0.011
+    in [mm]
+volume =  3.14159265358979312 * preplength * radius ^ 2
+    in [uL]
+
+[ionic_concentrations]
+dot(Ki) = -1 [uF/cm^2] * (cell.I_st + L_type_Ca_channel.i_CaK + rapid_delayed_rectifier_potassium_current.i_Kr + slow_delayed_rectifier_potassium_current.i_Ks + time_independent_potassium_current.i_K1 + ATP_sensitive_potassium_current.i_K_ATP + transient_outward_current.i_to + plateau_potassium_current.i_Kp + sodium_activated_potassium_current.i_K_Na + non_specific_calcium_activated_current.i_ns_K + -sodium_potassium_pump.i_NaK * 2) * geometry.A_cap / (geometry.V_myo * cell.F)
+    in [mM]
+Ko = parameters.K_o #4.5 #5.4
+    in [mM]
+dot(Nai) = -1 [uF/cm^2] * ((if(cell.markov_Na == 1, I_Na_Markov.I_Na_tot, fast_sodium_current.i_Na)) + L_type_Ca_channel.i_CaNa + sodium_background_current.i_Na_b + non_specific_calcium_activated_current.i_ns_Na + Na_Ca_exchanger.i_NaCa * 3 + sodium_potassium_pump.i_NaK * 3) * geometry.A_cap / (geometry.V_myo * cell.F)
+    in [mM]
+Nao = parameters.Na_o #140 #137
+    in [mM]
+
+[non_specific_calcium_activated_current]
+I_ns_K = P_ns_Ca * 1 ^ 2 * cell.V * cell.F ^ 2 / (cell.R * cell.T) * (L_type_Ca_channel.gamma_Ki * ionic_concentrations.Ki * exp(1 * cell.V * cell.F / (cell.R * cell.T)) - L_type_Ca_channel.gamma_Ko * ionic_concentrations.Ko) / (exp(1 * cell.V * cell.F / (cell.R * cell.T)) - 1)
+    in [A/F]
+I_ns_Na = P_ns_Ca * 1 ^ 2 * cell.V * cell.F ^ 2 / (cell.R * cell.T) * (L_type_Ca_channel.gamma_Nai * ionic_concentrations.Nai * exp(1 * cell.V * cell.F / (cell.R * cell.T)) - L_type_Ca_channel.gamma_Nao * ionic_concentrations.Nao) / (exp(1 * cell.V * cell.F / (cell.R * cell.T)) - 1)
+    in [A/F]
+K_m_ns_Ca = 0.0012
+    in [mM]
+P_ns_Ca = 1.75e-7 [L/F/ms]
+    in [L/F/ms]
+i_ns_Ca = i_ns_Na + i_ns_K
+    in [A/F]
+i_ns_K = I_ns_K * 1 / (1 + (K_m_ns_Ca / calcium_dynamics.Cai) ^ 3)
+    in [A/F]
+i_ns_Na = I_ns_Na * 1 / (1 + (K_m_ns_Ca / calcium_dynamics.Cai) ^ 3)
+    in [A/F]
+
+[plateau_potassium_current]
+Kp = 1 / (1 + exp((7.488 [mV] - cell.V) / 5.98 [mV]))
+    in [1]
+g_Kp = 0.00552
+    in [mS/uF]
+i_Kp = g_Kp * Kp * (cell.V - time_independent_potassium_current.E_K)
+    in [A/F]
+
+[rapid_delayed_rectifier_potassium_current]
+G_Kr = 0.02614
+    in [mS/uF]
+Rect = 1 / (1 + exp((cell.V + 9 [mV]) / 22.4 [mV]))
+    in [1]
+g_Kr = G_Kr * sqrt(ionic_concentrations.Ko / 5.4 [mM])
+    in [mS/uF]
+i_Kr = (1.0 - parameters.IKr_Block) * g_Kr * rapid_delayed_rectifier_potassium_current_xr_gate.xr * Rect * (cell.V - time_independent_potassium_current.E_K)
+    in [A/F]
+
+[rapid_delayed_rectifier_potassium_current_xr_gate]
+tau_xr = 1 [ms] / (0.00138 [1/mV] * (cell.V + 14.2 [mV]) / (1 - exp(-0.123 [1/mV] * (cell.V + 14.2 [mV]))) + 0.00061 [1/mV] * (cell.V + 38.9 [mV]) / (exp(0.145 [1/mV] * (cell.V + 38.9 [mV])) - 1))
+    in [ms]
+dot(xr) = (xr_infinity - xr) / tau_xr
+    in [1]
+xr_infinity = 1 / (1 + exp(-(cell.V + 21.5 [mV]) / 7.5 [mV]))
+    in [1]
+
+[sarcolemmal_calcium_pump]
+I_pCa = 1.15
+    in [A/F]
+K_mpCa = 0.0005
+    in [mM]
+i_p_Ca = I_pCa * calcium_dynamics.Cai / (K_mpCa + calcium_dynamics.Cai)
+    in [A/F]
+
+[slow_delayed_rectifier_potassium_current]
+E_Ks = cell.R * cell.T / cell.F * log((ionic_concentrations.Ko + PNaK * ionic_concentrations.Nao) / (ionic_concentrations.Ki + PNaK * ionic_concentrations.Nai))
+    in [mV]
+G_Ks = 0.433
+    in [mS/uF]
+PNaK = 0.01833
+    in [1]
+g_Ks = G_Ks * (1 + 0.6 / (1 + (3.8e-5 [mM] / calcium_dynamics.Cai) ^ 1.4))
+    in [mS/uF]
+i_Ks = (1.0 - parameters.IKs_Block) * g_Ks * slow_delayed_rectifier_potassium_current_xs1_gate.xs1 * slow_delayed_rectifier_potassium_current_xs2_gate.xs2 * (cell.V - E_Ks)
+    in [A/F]
+
+[slow_delayed_rectifier_potassium_current_xs1_gate]
+tau_xs1 = 1 [ms] / (7.19e-5 [1/mV] * (cell.V + 30 [mV]) / (1 - exp(-0.148 [1/mV] * (cell.V + 30 [mV]))) + 0.000131 [1/mV] * (cell.V + 30 [mV]) / (exp(0.0687 [1/mV] * (cell.V + 30 [mV])) - 1))
+    in [ms]
+dot(xs1) = (xs1_infinity - xs1) / tau_xs1
+    in [1]
+xs1_infinity = 1 / (1 + exp(-(cell.V - 1.5 [mV]) / 16.7 [mV]))
+    in [1]
+
+[slow_delayed_rectifier_potassium_current_xs2_gate]
+tau_xs2 = 4 [ms] / (7.19e-5 [1/mV] * (cell.V + 30 [mV]) / (1 - exp(-0.148 [1/mV] * (cell.V + 30 [mV]))) + 0.000131 [1/mV] * (cell.V + 30 [mV]) / (exp(0.0687 [1/mV] * (cell.V + 30 [mV])) - 1))
+    in [ms]
+dot(xs2) = (xs2_infinity - xs2) / tau_xs2
+    in [1]
+xs2_infinity = 1 / (1 + exp(-(cell.V - 1.5 [mV]) / 16.7 [mV]))
+    in [1]
+
+[sodium_activated_potassium_current]
+g_K_Na = 0.12848
+    in [mS/uF]
+i_K_Na = g_K_Na * pona * pov * (cell.V - time_independent_potassium_current.E_K)
+    in [A/F]
+kdKNa = 66
+    in [mM]
+nKNa = 2.8
+    in [1]
+pona = 0.85 / (1 + (kdKNa / ionic_concentrations.Nai) ^ nKNa)
+    in [1]
+pov = 0.8 - 0.65 / (1 + exp((cell.V + 125 [mV]) / 15 [mV]))
+    in [1]
+
+[sodium_background_current]
+g_Nab = 0.004
+    in [mS/uF]
+i_Na_b = g_Nab * (cell.V - fast_sodium_current.E_Na)
+    in [A/F]
+
+[sodium_potassium_pump]
+I_NaK = 2.25
+    in [A/F]
+K_mKo = 1.5
+    in [mM]
+K_mNai = 10
+    in [mM]
+f_NaK = 1 / (1 + 0.1245 * exp(-0.1 * cell.V * cell.F / (cell.R * cell.T)) + 0.0365 * sigma * exp(-cell.V * cell.F / (cell.R * cell.T)))
+    in [1]
+i_NaK = (1.0 - parameters.INaK_Block) * I_NaK * f_NaK / (1 + (K_mNai / ionic_concentrations.Nai) ^ 2) / (1 + K_mKo / ionic_concentrations.Ko)
+    in [A/F]
+sigma = 1 / 7 * (exp(ionic_concentrations.Nao / 67.3 [mM]) - 1)
+    in [1]
+
+[time_independent_potassium_current]
+E_K = cell.R * cell.T / cell.F * log(ionic_concentrations.Ko / ionic_concentrations.Ki)
+    in [mV]
+G_K1 = 0.75
+    in [mS/uF]
+g_K1 = G_K1 * sqrt(ionic_concentrations.Ko / 5.4 [mM])
+    in [mS/uF]
+i_K1 = (1.0 - parameters.IK1_Block) * g_K1 * time_independent_potassium_current_K1_gate.K1_infinity * (cell.V - E_K)
+    in [A/F]
+
+[time_independent_potassium_current_K1_gate]
+K1_infinity = alpha_K1 / (alpha_K1 + beta_K1)
+    in [1]
+alpha_K1 = 1.02 [mS/uF] / (1 + exp(0.2385 [1/mV] * (cell.V - time_independent_potassium_current.E_K - 59.215 [mV])))
+    in [mS/uF]
+beta_K1 = 1 [mS/uF] * (0.49124 * exp(0.08032 [1/mV] * (cell.V - time_independent_potassium_current.E_K + 5.476 [mV])) + exp(0.06175 [1/mV] * (cell.V - time_independent_potassium_current.E_K - 594.31 [mV]))) / (1 + exp(-0.5143 [1/mV] * (cell.V - time_independent_potassium_current.E_K + 4.753 [mV])))
+    in [mS/uF]
+
+[transient_outward_current]
+g_to = 0 * 0.5 [mS/uF]
+    in [mS/uF]
+i_to = (1.0 - parameters.Ito_Block) * g_to * transient_outward_current_zdv_gate.zdv ^ 3 * transient_outward_current_ydv_gate.ydv * rvdv * (cell.V - time_independent_potassium_current.E_K)
+    in [A/F]
+rvdv = exp(cell.V / 100 [mV])
+    in [1]
+
+[transient_outward_current_ydv_gate]
+alpha_ydv = 0.015 [mS/uF] / (1 + exp((cell.V + 60 [mV]) / 5 [mV]))
+    in [mS/uF]
+beta_ydv = 0.1 [mS/uF] * exp((cell.V + 25 [mV]) / 5 [mV]) / (1 + exp((cell.V + 25 [mV]) / 5 [mV]))
+    in [mS/uF]
+tau_ydv = 1 / (alpha_ydv + beta_ydv)
+    in [ms]
+dot(ydv) = (ydv_ss - ydv) / tau_ydv
+    in [1]
+ydv_ss = alpha_ydv / (alpha_ydv + beta_ydv)
+    in [1]
+
+[transient_outward_current_zdv_gate]
+alpha_zdv = 10 [mS/uF] * exp((cell.V - 40 [mV]) / 25 [mV]) / (1 + exp((cell.V - 40 [mV]) / 25 [mV]))
+    in [mS/uF]
+beta_zdv = 10 [mS/uF] * exp(-(cell.V + 90 [mV]) / 25 [mV]) / (1 + exp(-(cell.V + 90 [mV]) / 25 [mV]))
+    in [mS/uF]
+tau_zdv = 1 / (alpha_zdv + beta_zdv)
+    in [ms]
+dot(zdv) = (zdv_ss - zdv) / tau_zdv
+    in [1]
+zdv_ss = alpha_zdv / (alpha_zdv + beta_zdv)
+    in [1]
+
+[[protocol]]
+# Level  Start    Length   Period   Multiplier
+1.0      100.0    0.5      1000.0   0
+
+[[script]]
+import matplotlib.pyplot as pl
+import numpy as np
+import myokit
+from scipy.optimize import curve_fit
+import myokit.lib.fit as fit
+
+m = get_model()
+
+p = myokit.Protocol()
+p.schedule(1,0,1.0,1000,0)
+s = myokit.Simulation(m,p)
+s.pre(1000*100)
+d = s.run(1000)
+
+pl.figure()
+pl.subplot(2,1,1)
+pl.plot(d['environment.time'], d['cell.V'])
+pl.subplot(2,1,2)
+pl.plot(d['environment.time'], d['calcium_dynamics.Cai'])
+pl.show
+

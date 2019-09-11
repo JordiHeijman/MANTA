@@ -1,0 +1,17 @@
+#############################################################
+Antiarrhythmic drug profiles (==PROCAINAMIDE==)
+################### Ion channels & IC50 & Hill coefficient #####################
+ICaL	340.0	1
+IK1	33.0	1
+IKr	300.0	1
+IKs	810.0	1
+IKur	1000000	1
+INa	646.0	1
+INaL	1000000	1
+INaK	1000000	1
+INCX	1000000	1
+Ito	1000000	1
+######################## AAD INFO ###########################
+Antiarrhythmic drug class	Ia
+Effective range	0 - 1000
+#############################################################

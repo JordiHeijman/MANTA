@@ -1,0 +1,7 @@
+include manta_maastricht/models/*.mmt
+include manta_maastricht/AADs/*.txt
+include manta_maastricht/AADClass_v2resized.png
+include manta_maastricht/MANTA_icon.ico
+include manta_maastricht/MANTA_icon.png
+include manta_maastricht/MANTA_res1.png
+include manta_maastricht/UM_logo.jpg

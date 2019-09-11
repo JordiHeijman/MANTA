@@ -5,3 +5,6 @@ __pycache__
 # Ignore installation files
 *.egg-info
 
+# Package files
+build
+sdist

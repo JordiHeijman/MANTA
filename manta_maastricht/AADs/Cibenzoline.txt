@@ -1,0 +1,17 @@
+#############################################################
+Antiarrhythmic drug profiles (==CIBENZOLINE==)
+################### Ion channels & IC50 & Hill coefficient #####################
+ICaL	20.0	1
+IK1	33.7	1
+IKr	15.0	1
+IKs	1000000	1
+IKur	1000000	1
+INa	15.0	1
+INaL	45.0	1
+INaK	1000000	1
+INCX	1000000	1
+Ito	1000000	1
+######################## AAD INFO ###########################
+Antiarrhythmic drug class	Ia
+Effective range	0 - 50
+#############################################################

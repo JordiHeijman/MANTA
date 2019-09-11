@@ -1,0 +1,516 @@
+[[model]]
+name: Luo-Rudy model (1991)
+desc: """
+Implementation of the Luo-Rudy model I for the ventricular myocyte.
+Based on an updated formulation downloaded from http://rudylab.wustl.edu
+
+Original copyright notice:
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Copyright (C) 2006 by Leonid Livshitz and Yoram Rudy
+Email rudy@wustl.edu
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the
+Free Software Foundation, Inc.,
+59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+"""
+author: Michael Clerx, modified by Henry Sutanto -- Maastricht University 
+"""
+###Changelog###
+Up to 22/03/2019 : 
+- State-dependent markov INa has been implemented 
+- Markov INa has been validated (drug-free, Flecainide, Lidocaine, Vernakalant) --> Further improvement might still be needed.
+"""
+# Initial conditions
+membrane.V = -84.5286
+ina.m      = 0.0017
+ina.h      = 0.9832
+ina.j      = 0.995484
+ica.d      = 0.000003
+ica.f      = 1
+ik.x       = 0.0057
+ica.Ca_i   = 0.0002
+"""
+I_Na_Markov.C3 = 0.99
+I_Na_Markov.C2 = 0.01
+I_Na_Markov.C1 = 0  
+I_Na_Markov.O  = 0  
+I_Na_Markov.IF = 0  
+I_Na_Markov.IC3 = 0 
+I_Na_Markov.IC2 = 0 
+I_Na_Markov.IM1 = 0 
+I_Na_Markov.IM2 = 0 
+
+I_Na_Markov.IFB = 0  
+I_Na_Markov.IC3B = 0 
+I_Na_Markov.IC2B = 0 
+I_Na_Markov.OB = 0
+"""
+I_Na_Markov.IC3 = 0
+I_Na_Markov.IC2 = 0
+I_Na_Markov.IF = 0
+I_Na_Markov.C3 = 1.00
+I_Na_Markov.C2 = 0
+I_Na_Markov.C1 = 0
+I_Na_Markov.O = 0
+I_Na_Markov.IS = 0
+I_Na_Markov.DpIC3 = 0
+I_Na_Markov.DpIC2 = 0
+I_Na_Markov.DpIF = 0
+I_Na_Markov.DpC3 = 0
+I_Na_Markov.DpC2 = 0
+I_Na_Markov.DpC1 = 0
+I_Na_Markov.DpO = 0
+I_Na_Markov.DpIS = 0
+I_Na_Markov.DpIT = 0
+I_Na_Markov.DIC3 = 0
+I_Na_Markov.DIC2 = 0
+I_Na_Markov.DIF = 0
+I_Na_Markov.DC3 = 0
+I_Na_Markov.DC2 = 0
+I_Na_Markov.DC1 = 0
+I_Na_Markov.DO = 0
+I_Na_Markov.DIS = 0
+I_Na_Markov.DIT = 0
+
+[parameters]
+ICaL_Block = 0.0
+IK1_Block = 0.0
+IKr_Block = 0.0
+IKs_Block = 0.0
+IKur_Block = 0.0
+INa_Block = 0.0
+INaL_Block = 0.0
+INaK_Block = 0.0
+INCX_Block = 0.0
+Ito_Block = 0.0
+
+Ca_o = 1.8 [mmol/L] : Extracellular Ca2+ concentration
+K_o = 5.4 [mmol/L] : Extracellular K+ concentration
+Na_o = 140 [mmol/L] : Extracellular Na+ concentration
+
+[output]
+Vm = membrane.V
+Cai = 1000 * ica.Ca_i # in micromolar/l
+#dVdt = dot(membrane.V)
+
+# Engine variables
+[engine]
+time = 0 bind time
+pace = 0 bind pace
+
+# Membrane potential and stimulus
+[membrane]
+markov_Na = 1
+dot(V) = -(i_ion + i_stim + i_diff)
+    label membrane_potential
+    in [mV]
+    desc: The membrane potential
+i_ion = (if(markov_Na == 1, I_Na_Markov.I_Na_tot, ina.INa)) + ik.IK + ib.Ib + ikp.IKp + ik1.IK1 + ica.ICa
+#i_ion = ina.INa + ik.IK + ib.Ib + ikp.IKp + ik1.IK1 + ica.ICa
+i_stim = engine.pace * stim_amplitude
+    stim_amplitude = -80 [uA/cm^2]
+        desc: """
+        Stimulus amplitude.
+        The online matlab implementation features this 80 uA/cm^2, 0.5 millisecond
+        pulse. The cellml version uses a 2 millisecond 25.5 uA/cm^2 pulse.
+        """
+i_diff = 0 bind diffusion_current
+
+# Fast Sodium current
+[ina]
+use membrane.V as V
+ENa = cell.RTF * log(cell.Na_o / cell.Na_i)
+    desc: Nernst potential of Na
+    in [mV]
+a = 1 - 1 / (1 + exp(-(V + 40) / 0.24))
+    desc: Used instead of if statement.
+dot(m) =  alpha * (1 - m) - beta * m
+    alpha = if(V == -47.13, -3.2, 
+            0.32 * (V + 47.13) / (1 - exp(-0.1 * (V + 47.13))))    
+    beta  = 0.08 * exp(-V / 11)
+    desc: """
+    Activation parameter of the fast sodium channel, based on Ebihara-Johnson
+    (E-J) model of cardiac cells (chicken embryo)
+    """
+dot(h) = alpha * (1 - h) - beta * h
+    alpha = a * 0.135 * exp((80 + V) / -6.8)
+    beta  = a * (3.56 * exp(0.079 * V) + 3.1e5 * exp(0.35 * V)) \
+          + (1 - a) / (0.13 * (1 + exp((V + 10.66) / -11.1)))
+    desc: """
+    (Fast) Inactivation parameter of the fast sodium channel, based on
+    Ebihara-Johnson (E-J) model of cardiac cells (chicken embryo)
+    """
+dot(j) =  alpha * (1 - j) - beta * j
+    alpha = a * ( -127140 * exp(0.2444 * V) - 3.474e-5 * exp(-0.04391 * V)) \
+              * (V + 37.78) / (1 + exp(0.311 * (V + 79.23)))
+    beta  = a * (0.1212 * exp(-0.01052 * V) / (1 + exp(-0.1378 * (V + 40.14)))) \
+          + (1 - a) * (0.3 * exp(-2.535e-7 * V) / (1 + exp(-0.1 * (V + 32))))
+    desc: """
+    Slow inactivation gate. Inspired by Beeler-Reuter and Haas. Steady-state
+    value (j_inf) is set to value from h gate (h_inf). Time constant obtained
+    from Beeler-Reuter model.
+    """
+gNa = 16
+INa = (1.0 - parameters.INa_Block) * gNa * m^3 * h * j * (V - ENa)
+    desc: Fast sodium current
+    in [uA/cm^2]
+
+########################################################
+[I_Na_Markov]
+# this state dependence of Na channel was from Moreno et al 2011 (Sci. Transl. Med)
+# contains free, charged, neutral drug
+
+class1_drug_cat = 3
+Lidocaine_fact = if(class1_drug_cat==2 and new_drug_mode==0, 1, 0) ## example for Ib
+Flecainide_fact = if(class1_drug_cat==3 and new_drug_mode==0, 1, 0) ## example for Ic
+Vernakalant_fact = if(class1_drug_cat==4 and new_drug_mode==0, 1, 0) 
+
+x1 = 0.36074068186699165
+x2 = 0.67947767489963651
+x3 = 1.4181189960289569
+x4 = 0.6642892365971278
+x5 = 2.2262983343828586
+x6 = 2.7462799132769664
+x7 = 3.7291786844606944
+x8 = 0.76114048789324507
+x9 = 0.51941826904556065
+x10 = 0.16354687278047286
+x11 = 0.78283058240715697
+x12 = 0.95431854763454882
+x13 = 1.4945119912466263
+x14 = 1.0328344
+x15 = 0.99481919
+x16 = 1.00254845
+x17 = 1.01096423
+x18 = 1.97052465
+x19 = 1.0572724565237737
+x20 = 0.755084427579001
+x21 = 0.9911675441375104
+x22 = 1.1141648721471809
+x23 = 0.7400221830311837
+x24 = 0.6867087130674105
+x25 = 0.9613389122782059
+
+f1 = 1.0399295040200942 #15802.517082265076
+f2 = 1.0219136022915718 #11212.49445307003
+f3 = 1.0083050110639202 #1.0835911457972944
+f4 = 1.0401460996418987 #4.7213138217409707
+f5 = 1.079520877876849 #1.1886854610200599
+f6 = 0.94507035909109249 #1.1293915676022106
+f7 = 1.1222183539041479 #0.98647121091698153
+f8 = 11.52057054124314 #0.54542349779755606
+f9 = 1.0019593728861569 #1.020713680006784
+f10 = 0.59209671669695485 #2.6609951303941308
+f11 = 0.94910419811016 #1.1411905523331658
+f12 = 0.95087124096670572 #5.3540204782968566
+f13 = 1.0689323565184199 #1.028853996176295
+f14 = 1.0364785427728269 #1.0033797797467918
+
+l1 = 1.36922845112808845e+04
+l2 = 1.36922845112808845e+04
+l3 = 9.75801811222358206e-01
+l4 = 4.78855031291120348e+00
+l5 = 9.75801811222358206e-01
+l6 = 9.78288593348167645e-01
+l7 = 9.78288593348167645e-01
+l8 = 9.05788719283946997e-01
+l9 = 9.05788719283946997e-01
+l10 = 4.84105307990853273e+00
+
+v1 = 7170.4622644564224
+v2 = 15352.068978379524
+v3 = 0.78329295519833497
+v4 = 6.2271179964787571
+v5 = 22.10184390723893
+v6 = 1.5107146709941404
+v7 = 1.0935642293370962
+v8 = 0.65910138578597266
+v9 = 2.3700350948377
+v10 = 6.2071593539114822
+v11 = 0
+v12 = 0
+v13 = 0
+v14 = 0
+
+#### new drug components ####
+new_drug_mode = 0
+n_diffusion = 0
+n_kd_open = 0
+n_k_off = 0
+n_ki_off = 0
+n_kc_off = 0
+n_p22 = 0
+n_p23 = 0
+n_p24 = 0
+n_p25 = 0
+n_p26 = 0
+n_p27 = 0
+n_p28 = 0
+n_p29 = 0
+n_p30 = 0
+n_p31 = 0
+n_p32 = 0
+n_p33 = 0
+n_p34 = 0
+n_p35 = 0
+
+diffusion = ((new_drug_mode*n_diffusion) + (Flecainide_fact*5500) + (Lidocaine_fact*500) + (Vernakalant_fact*500)) #in [1 / M ms]
+kd_open = ((new_drug_mode*n_kd_open) + (Flecainide_fact*11.2e-6) + (Lidocaine_fact*318e-6) + (Vernakalant_fact*318e-6)) * exp(-0.7 * membrane.V * cell.FRT)
+conc = 0
+pH = 7.4
+pKa_newdrug = 7.4
+pKa_Lidocaine = 7.6
+pKa_Flecainide = 9.3
+pKa_Vernakalant = 5.4
+#pH = (if(Lidocaine_fact==1, pH_Lidocaine, 0)) + (if(Flecainide_fact==1, pH_Flecainide, 0)) + (if(new_drug_mode==1, pH_newdrug, 0))
+pKa = (if(Vernakalant_fact==1, pKa_Vernakalant, 0)) + (if(Lidocaine_fact==1, pKa_Lidocaine, 0)) + (if(Flecainide_fact==1, pKa_Flecainide, 0)) + (if(new_drug_mode==1, pKa_newdrug, 0))
+portion = 1/(1+10^(pH-pKa))
+conc_dplus = portion * conc
+conc_d = (1-portion) * conc
+
+kon = conc_dplus * diffusion #if(conc_dplus>0.0001, conc_dplus * diffusion, 1e-8) #### for protonated drugs
+kcon = kon
+koff = kd_open * diffusion
+kcoff = koff
+
+k_on = conc_d * diffusion #if(conc_d>0.0001, , 1e-8) #### for neutral drugs
+k_off = ((new_drug_mode*n_k_off) + (Flecainide_fact*400e-6) + (Lidocaine_fact*400e-6) + (Vernakalant_fact*400e-6)) * diffusion
+ki_on = k_on / 2
+ki_off = ((new_drug_mode*n_ki_off) + (Flecainide_fact*5.4e-6) + (Lidocaine_fact*3.4e-6) + (Vernakalant_fact*3.4e-6)) * diffusion
+kc_on = k_on / 2
+kc_off = ((new_drug_mode*n_kc_off) + (Flecainide_fact*800e-6) + (Lidocaine_fact*900e-6) + (Vernakalant_fact*900e-6)) * diffusion
+
+Tfactor = 1 / (3 ^ ((37 - (cell.T - 273)) / 10.0)) #0.19245
+
+# Transition rates (ms-1)  
+a11 = Tfactor * p1 / (p2 * exp(-(membrane.V - actshift) / p3) + p6 * exp(-(membrane.V - actshift) / p7))
+a12 = Tfactor * p1 / (p2 * exp(-(membrane.V - actshift) / p4) + p6 * exp(-(membrane.V - actshift) / p7))
+a13 = Tfactor * p1 / (p2 * exp(-(membrane.V - actshift) / p5) + p6 * exp(-(membrane.V - actshift) / p7))
+b11 = Tfactor * p8 * exp(-(membrane.V - actshift) / p9)
+b12 = Tfactor * p10 * exp(-(membrane.V - actshift - p11) / p9)
+b13 = Tfactor * p12 * exp(-(membrane.V - actshift - p13) / p9)
+#a3 = p14 * exp(-membrane.V / p15)
+#b3 = p16 * exp(membrane.V / p17)
+#aa = a3 / (a3 + b3)
+#tau = 1 / (a3 + b3)
+a3_ss = 1/(1+exp((membrane.V - p14_new) / p15_new))
+a3_tau = h1 + p01 * exp(p16_new * (membrane.V - p14_new)) / (1 + exp(p17_new * (membrane.V - p14_new)))
+a3 = Tfactor * a3_ss / a3_tau
+b3 = Tfactor * (1 - a3_ss) / a3_tau
+a2 = Tfactor * p18 * exp(membrane.V / p19)
+b2 = (a13*a2*a3) / (b13*b3)
+ax = p20 * a2
+bx = p21 * a3
+
+a13c = p22 * a13
+b13c = if(kon>0, (b13 * kcon * koff * a13c) / (kon * kcoff * a13), 0)
+a13n = p23 * a13
+b13n = if(k_on>0, (b13 * kc_on * a13n * k_off) / (kc_off * a13 * k_on), 0)
+ax1 = p24 * ax
+bx1 = p25 * bx
+ax2 = p26 * ax
+bx2 = if(ki_on>0, (bx * k_on * ax2 * ki_off) / (ax * ki_on * k_off), 0)
+a22 = p27 * a2
+a_22 = p28 * a2
+b22 = if(b13c>0, (a13c * a22 * a33) / (b13c * b33), 0)
+b_22 = if(b13n>0, (a_33 * a13n * a_22) / (b_33 * b13n), 0)
+b33 = p29 * b3
+b_33 = p30 * b3
+a33 = p31 * a3
+a_33 = if(ki_on>0, (ki_off * a3 * kc_on * b_33) / (ki_on * kc_off * b3), 0)
+## DIT or DpIT ONLY in Lidocaine (Inactivated, Trapped state)
+a44 = p32 * a2
+b44 = p33 * a3
+a_44 = p34 * a2
+b_44 = p35 * a2
+
+actshift = -15*x19
+h1 = 2*x20
+p1 = 8.5539*x1
+p2 = 7.4392e-2*x2
+p3 = 17.0*x3
+p4 = 15.0*x4
+p5 = 12.0*x5
+p6 = 2.0373e-1*x6
+p7 = 150*x7
+p8 = 7.5215e-2*x8
+p9 = 20.3*x9
+p10 = 2.7574*x10
+p11 = 5*x11
+p12 = 4.7755e-1*x12
+p13 = 10*x13
+p14 = 5.1458e-6 #5.1458e-6 *1.0325463712122342
+p15 = 8.2471 #0.8*8.2471 * 0.10401603829601243
+p16 = 6.1205 #6.1205 * 0.96668483687506801
+p17 = 12.542 #0.8*12.542 * 1.0908872227689068
+p18 = 13.370*x14
+p19 = 43.749*x15
+p20 = 3.4229e-2*x16
+p21 = 1.7898e-2*x17
+p14_new = -70*x21
+p15_new = 3.5*x22
+p16_new = 0.052 * 2.9*x23
+p17_new = 0.132 * 1.9*x24
+p01 = 41*x25
+
+p22 = (new_drug_mode*n_p22) + (Flecainide_fact*3.6324e-3*f1) + (Lidocaine_fact*5.6974e-03*l1) + (Vernakalant_fact*5.6974e-03*v1) #3.6324e-3
+p23 = (new_drug_mode*n_p23) + (Flecainide_fact*2.6452*f2) + (Lidocaine_fact*8.4559e+01*l2) + (Vernakalant_fact*8.4559e+01*v2) #2.6452
+p24 = (new_drug_mode*n_p24) + (Flecainide_fact*5.7831e-5*f3) + (Lidocaine_fact*6.3992e-07*l3) + (Vernakalant_fact*6.3992e-07*v3) #5.7831e-5
+p25 = (new_drug_mode*n_p25) + (Flecainide_fact*1.6689e-8*f4) + (Lidocaine_fact*1.3511e+00*l4) + (Vernakalant_fact*1.3511e+00*v4) #1.6689e-8
+p26 = (new_drug_mode*n_p26) + (Flecainide_fact*2.6126e-01*f5) + (Lidocaine_fact*1.3110e-01*l5) + (Vernakalant_fact*1.3110e-01*v5) #2.6126e-01
+p27 = (new_drug_mode*n_p27) + (Flecainide_fact*1.4847e3*f6) + (Lidocaine_fact*6.7067e-06*l6) + (Vernakalant_fact*6.7067e-06*v6) #1.4847e3
+p28 = (new_drug_mode*n_p28) + (Flecainide_fact*4.2385e+01*f7) + (Lidocaine_fact*1.7084e-05*l7) + (Vernakalant_fact*1.7084e-05*v7) #4.2385e+01
+p29 = (new_drug_mode*n_p29) + (Flecainide_fact*1.7352e-6*f8) + (Lidocaine_fact*1.9698e-05*l8) + (Vernakalant_fact*1.9698e-05*v8) #1.7352e-6
+p30 = (new_drug_mode*n_p30) + (Flecainide_fact*2.1181e+00*f9) + (Lidocaine_fact*4.8477*l9) + (Vernakalant_fact*4.8477*v9) #2.1181e+00
+p31 = (new_drug_mode*n_p31) + (Flecainide_fact*6.7505e-05*f10) + (Lidocaine_fact*3.2976*l10) + (Vernakalant_fact*3.2976*v10) #6.7505e-05
+p32 = (new_drug_mode*n_p32) + (Flecainide_fact*2.4135*f11) + (Lidocaine_fact*0) + (Vernakalant_fact*2.4135*v11)
+p33 = (new_drug_mode*n_p33) + (Flecainide_fact*4.9001e-2*f12) + (Lidocaine_fact*0) + (Vernakalant_fact*4.9001e-2*v12) 
+p34 = (new_drug_mode*n_p34) + (Flecainide_fact*1.0326e-03*f13) + (Lidocaine_fact*0) + (Vernakalant_fact*1.0326e-03*v13) 
+p35 = (new_drug_mode*n_p35) + (Flecainide_fact*2.1378e-02*f14) + (Lidocaine_fact*0) + (Vernakalant_fact*2.1378e-02*v14)
+
+dot(IC3) = -IC3 * (a11 + a3 + ki_on) + IC2 * b11 + C3 * b3 + ki_off * DIC3
+dot(IC2) = -IC2 * (b11 + a3 + a12 + ki_on) + IC3 * a11 + IF * b12 + C2 * b3 + ki_off * DIC2
+dot(IF) = -IF * (b12 + a3 + b2 + ki_on) + IC2 * a12 + C1 * b3 + O * a2 + ki_off * DIF
+dot(C3) = -C3 * (b3 + a11 + kcon + kc_on) + IC3 * a3 + C2 * b11 + DpC3 * kcoff + DC3 * kc_off
+dot(C2) = -C2 * (b11 + b3 + a12 + kcon + kc_on) + C3 * a11 + IC2 * a3 + C1 * b12 + DpC2 * kcoff + DC2 * kc_off
+dot(C1) = -C1 * (b12 + b3 + a13 + kcon + kc_on) + C2 * a12 + IF * a3 + O * b13 + DpC1 * kcoff + DC1 * kc_off
+dot(O) = -O * (b13 + a2 + ax + kon + k_on) + C1 * a13 + IF * b2 + IS * bx + DpO * koff + DO * k_off
+dot(IS) = -IS * (bx + ki_on) + O * ax + DIS * ki_off
+
+dot(DpIC3) = -DpIC3 * (a33 + a11) + DpIC2 * b11 + DpC3 * b33
+dot(DpIC2) = -DpIC2 * (b11 + a33 + a12) + DpIC3 * a11 + DpIF * b12 + DpC2 * b33
+dot(DpIF) = -DpIF * (b12 + a33 + b22 + a44) + DpIC2 * a12 + DpC1 * b33 + DpO * a22 + DpIT * b44
+dot(DpC3) = -DpC3 * (b33 + a11 + kcoff) + DpIC3 * a33 + DpC2 * b11 + C3 * kcon
+dot(DpC2) = -DpC2 * (b11 + b33 + a12 + kcoff) + DpC3 * a11 + DpIC2 * a33 + DpC1 * b12 + C2 * kcon
+dot(DpC1) = -DpC1 * (b12 + b33 + a13c + kcoff) + DpC2 * a12 + DpIF * a33 + DpO * b13c + C1 * kcon
+dot(DpO) = -DpO * (b13c + a22 + ax1 + koff) + DpC1 * a13c + DpIF * b22 + DpIS * bx1 + O * kon
+dot(DpIS) = -DpIS * (bx1) + DpO * ax1
+dot(DpIT) = -DpIT * b44 + DpIF * a44
+
+dot(DIC3) = -DIC3 * (a_33 + a11 + ki_off) + DIC2 * b11 + DC3 * b_33 + ki_on * IC3
+dot(DIC2) = -DIC2 * (b11 + a_33 + a12 + ki_off) + DIC3 * a11 + DIF * b12 + DC2 * b_33 + ki_on * IC2
+dot(DIF) = -DIF * (b12 + a_33 + b_22 + a_44 + ki_off) + DIC2 * a12 + DC1 * b_33 + DO * a_22 + DIT * b_44 + ki_on * IF
+dot(DC3) = -DC3 * (b_33 + a11 + kc_off) + DIC3 * a_33 + DC2 * b11 + C3 * kc_on
+dot(DC2) = -DC2 * (b11 + b_33 + a12 + kc_off) + DC3 * a11 + DIC2 * a_33 + DC1 * b12 + C2 * kc_on
+dot(DC1) = -DC1 * (b12 + b_33 + a13n + kc_off) + DC2 * a12 + DIF * a_33 + DO * b13n + C1 * kc_on
+dot(DO) = -DO * (b13n + a_22 + ax2 + k_off) + DC1 * a13n + DIF * b_22 + DIS * bx2 + O * k_on
+dot(DIS) = -DIS * (bx2 + ki_off) + DO * ax2 + IS * ki_on
+dot(DIT) = -DIT * b_44 + DIF * a_44
+
+#E_Na = (phys.RTF) * log(138/10)
+E_Na = cell.RTF * log(cell.Na_o / cell.Na_i)
+    in [mV]
+g_Na = x18*7.8 *1.0 *4.5 #7.8 *1.0 * 1.52#* 48.33
+    in [1/ms]
+I_Na_tot = (1 - parameters.INa_Block) * g_Na * O * (membrane.V - E_Na)
+    in [pA]
+
+########################################################
+# Time-dependent Potassium current
+[ik]
+use membrane.V as V
+PNa_K = 0.01833 : Permability ratio of Na to K
+gK = 0.282 * sqrt(cell.K_o / 5.4)
+    in [mS/uF]
+E = cell.RTF * log((cell.K_o + PNa_K * cell.Na_o) / (cell.K_i + PNa_K * cell.Na_i))
+    in [mV]
+xi = if(V < -100,
+    1,
+    if(V == -77,
+        2.837 * 0.04 / exp(0.04 * (V + 35)),
+        2.837 * (exp(0.04 * (V + 77)) - 1) / ((V + 77) * exp(0.04 * (V + 35)))
+        ))
+dot(x) = alpha * (1 - x) - beta * x
+    alpha = 0.0005 * exp(0.083 * (V + 50)) / (1 + exp(0.057 * (V + 50)))
+    beta  = 0.0013 * exp(-0.06 * (V + 20)) / (1 + exp(-0.04 * (V + 20)))
+IK = gK * xi * x * (V - E)
+    desc: Time-dependent Potassium current
+
+# Plateau Potassium current
+[ikp]
+use membrane.V as V
+gKp = 0.0183
+IKp = gKp * (V + 87.8789) / (1 + exp((7.488 - V) / 5.98))
+    desc: Plateau Potassium current
+
+# Slow inward Calcium current
+[ica]
+use membrane.V as V
+dot(Ca_i) =  -1e-4 * ICa + 0.07 * (1e-4 - Ca_i)
+    desc: Intracellular Calcium concentration
+E = 7.7 - 13.0287 * log(Ca_i / cell.Ca_o)
+    desc: Nernst potential
+    in [mV]
+dot(d) =  alpha * (1 - d) - beta * d
+    alpha = 0.095 * exp(-0.01 * (V - 5)) / (1 + exp(-0.072 * (V - 5)))
+    beta  = 0.07 * exp(-0.017 * (V + 44)) / (1 + exp(0.05 * (V + 44)))
+dot(f) =  alpha * (1-f) - beta * f
+    alpha = 0.012 * exp(-0.008 * (V + 28)) / (1 + exp(0.15 * (V + 28)))
+    beta  = 0.0065 * exp(-0.02 * (V + 30)) / (1 + exp(-0.2 * (V + 30)))
+gCa = 0.09
+ICa = (1.0 - parameters.ICaL_Block) * gCa * d * f * (V - E)
+
+# Time-independent potassium current
+[ik1]
+use membrane.V as V
+E = cell.RTF * log(cell.K_o / cell.K_i)
+gK1 = 0.6047 * sqrt(cell.K_o / 5.4) * alpha / (alpha + beta)
+    alpha = 1.02 / (1 + exp(0.2385 * (V - E - 59.215)))
+    beta  = (0.49124 * exp(0.08032 * (V - E + 5.476)) + exp(0.06175 * (V - E - 594.31)))  \
+          / (1 + exp(-0.5143 * (V - E + 4.753)))
+IK1 = (1.0 - parameters.IK1_Block) * gK1 * (V - E)
+
+# Background current
+[ib]
+gb = 0.03921
+Ib = gb * (membrane.V + 59.87) : Background current
+
+# Cell parameters (ventricular mammalian cell)
+[cell]
+K_o = parameters.K_o 
+K_i = 145 [mM]
+Na_o = parameters.Na_o 
+Na_i = 10 [mM]
+Ca_o = parameters.Ca_o 
+R = 8314 [mJ/mol/K] : Gas constant
+T = 310 [K] : Absolute temperature
+F = 96500 [C/mol] : Faraday constant
+RTF = R*T/F
+FRT = F / (R * T)
+
+[[protocol]]
+# Level Start Length Period Multiplier
+1.0     100   0.5    1000   0
+
+[[script]]
+import matplotlib.pyplot as pl
+import myokit
+
+#
+# This example file shows a basic AP with the LR1991 (LR1) model.
+#
+
+# Create simulation
+m = get_model()
+p = get_protocol()
+s = myokit.Simulation(m, p)
+
+# Run
+d = s.run(1000)
+
+# Show results
+pl.figure()
+pl.plot(d['engine.time'], d['membrane.V'])
+pl.show()
+

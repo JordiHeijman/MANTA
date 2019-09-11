@@ -1,0 +1,912 @@
+[[model]]
+author: Henry Sutanto -- Maastricht University
+desc: """
+    Model Status
+    This model is known to run in OpenCell and COR to reproduce
+    the output shown in the publication. The units have been checked and they
+    are consistent.
+    Model Structure
+    ABSTRACT: Mathematical modeling of the
+    cardiac action potential has proven to be a powerful tool for illuminating
+    various aspects of cardiac function, including cardiac arrhythmias.
+    However, no currently available detailed action potential model accurately
+    reproduces the dynamics of the cardiac action potential and intracellular
+    calcium (Ca(i)) cycling at rapid heart rates relevant to ventricular
+    tachycardia and fibrillation. The aim of this study was to develop such a
+    model. Using an existing rabbit ventricular action potential model, we
+    modified the L-type calcium (Ca) current (I(Ca,L)) and Ca(i) cycling
+    formulations based on new experimental patch-clamp data obtained in
+    isolated rabbit ventricular myocytes, using the perforated patch
+    configuration at 35-37 degrees C. Incorporating a minimal seven-state
+    Markovian model of I(Ca,L) that reproduced Ca- and voltage-dependent
+    kinetics in combination with our previously published dynamic Ca(i) cycling
+    model, the new model replicates experimentally observed action potential
+    duration and Ca(i) transient alternans at rapid heart rates, and accurately
+    reproduces experimental action potential duration restitution curves
+    obtained by either dynamic or S1S2 pacing.
+    model diagram
+    Schematic diagram
+    of the Mahajan et al model, featuring whole-cell model showing basic
+    elements of Ca cycling machinery and membrane ion currents, as well as a
+    seven-state Markovian model of the L-type Ca channel.
+    The original
+    publication reference is cited below:
+    A rabbit ventricular action potential
+    model replicating cardiac dynamics at rapid heart rates, Mahajan A,
+    Shiferaw Y, Sato D, Baher A, Olcese R, Xie LH, Yang MJ, Chen PS, Restrepo
+    JG, Karma A, Garfinkel A, Qu Z, Weiss JN, 2008
+    Biophysical Journal
+    ,
+    94(2):392-410
+    PubMed ID: 18160660
+    """
+"""
+###Changelog###
+Up to 22/03/2019 : 
+- State-dependent markov INa has been implemented 
+- Markov INa has been validated (drug-free, Flecainide, Lidocaine, Vernakalant) --> Further improvement might still be needed.
+"""
+name: mahajan_2008
+# Initial values
+cell.V       = -8.71698161694060047e1
+INa.xh       =  9.90691306716000031e-1
+INa.xj       =  9.93888937282999985e-1
+INa.xm       =  1.07545335699999996e-3
+ICaL.c1      =  1.82112520000000017e-5
+ICaL.c2      =  9.79322592773000045e-1
+ICaL.xi1ca   =  1.20815348200000003e-3
+ICaL.xi1ba   =  3.36165960000000017e-5
+ICaL.xi2ca   =  4.17300846599999962e-3
+ICaL.xi2ba   =  1.52425946880000007e-2
+IKr.xr       =  7.07423933100000037e-3
+IKs.xs1      =  4.82675871310000032e-2
+IKs.xs2      =  1.05468807033000003e-1
+Ito.xtos     =  3.64776906000000012e-3
+Ito.ytos     =  1.74403618112000003e-1
+Ito.xtof     =  3.64359259399999998e-3
+Ito.ytof     =  9.93331326441999951e-1
+Irel.Ca_JSR  =  9.75054636972659949e1
+Irel.xir     =  6.67925726399999989e-3
+Na.Na_i      =  1.14417123116139994e1
+Ca.Ca_dyad   =  1.71657313068500006
+Ca.Ca_submem =  2.26941113355000001e-1
+Ca.Ca_i      =  2.56752008084000005e-1
+Ca.Ca_NSR    =  1.04450004990522999e2
+Ca.tropi     =  2.21716898949530012e1
+Ca.trops     =  1.98647019498539983e1
+"""
+I_Na_Markov.C3 = 0.99
+I_Na_Markov.C2 = 0.01
+I_Na_Markov.C1 = 0  
+I_Na_Markov.O  = 0  
+I_Na_Markov.IF = 0  
+I_Na_Markov.IC3 = 0 
+I_Na_Markov.IC2 = 0 
+I_Na_Markov.IM1 = 0 
+I_Na_Markov.IM2 = 0 
+
+I_Na_Markov.IFB = 0  
+I_Na_Markov.IC3B = 0 
+I_Na_Markov.IC2B = 0 
+I_Na_Markov.OB = 0
+"""
+I_Na_Markov.IC3 = 0
+I_Na_Markov.IC2 = 0
+I_Na_Markov.IF = 0
+I_Na_Markov.C3 = 1.00
+I_Na_Markov.C2 = 0
+I_Na_Markov.C1 = 0
+I_Na_Markov.O = 0
+I_Na_Markov.IS = 0
+I_Na_Markov.DpIC3 = 0
+I_Na_Markov.DpIC2 = 0
+I_Na_Markov.DpIF = 0
+I_Na_Markov.DpC3 = 0
+I_Na_Markov.DpC2 = 0
+I_Na_Markov.DpC1 = 0
+I_Na_Markov.DpO = 0
+I_Na_Markov.DpIS = 0
+I_Na_Markov.DpIT = 0
+I_Na_Markov.DIC3 = 0
+I_Na_Markov.DIC2 = 0
+I_Na_Markov.DIF = 0
+I_Na_Markov.DC3 = 0
+I_Na_Markov.DC2 = 0
+I_Na_Markov.DC1 = 0
+I_Na_Markov.DO = 0
+I_Na_Markov.DIS = 0
+I_Na_Markov.DIT = 0
+
+[output]
+Vm = cell.V
+Cai = Ca.Ca_i
+#dVdt = dot(cell.V)
+
+[Ca]
+dot(Ca_NSR) = dCa_JSR
+    in [uM]
+dot(Ca_dyad) = Irel.xiryr - (Ca_dyad - Ca_submem) / taups
+    in [uM]
+dot(Ca_i) = dciib * (jd - Ileak_Iup_Ixfer.jup + Ileak_Iup_Ixfer.jleak - xbi)
+    in [uM]
+dot(Ca_submem) = dcsib * (50 * (Irel.xir - jd - ICaL.jca + INaCa.jNaCa) - xbs)
+    in [uM]
+bcal = 24
+    in [uM]
+bmem = 15
+    in [uM]
+bpxi = bcal * xkcal / ((xkcal + Ca_i) * (xkcal + Ca_i))
+    in [1]
+bpxs = bcal * xkcal / ((xkcal + Ca_submem) * (xkcal + Ca_submem))
+    in [1]
+bsar = 42
+    in [uM]
+btrop = 70
+    in [uM]
+csm = Ca_submem / 1000 [1 (0.001)]
+    in [mM]
+dCa_JSR = -Irel.xir + Ileak_Iup_Ixfer.jup - Ileak_Iup_Ixfer.jleak
+    in [mol/m^3/s]
+dciib = 1 / (1 + bpxi + spxi + mempxi + sarpxi)
+    in [1]
+dcsib = 1 / (1 + bpxs + spxs + mempxs + sarpxs)
+    in [1]
+jd = (Ca_submem - Ca_i) / taud
+    in [mol/m^3/s]
+kmem = 0.3
+    in [uM]
+ksar = 13
+    in [uM]
+mempxi = bmem * kmem / ((kmem + Ca_i) * (kmem + Ca_i))
+    in [1]
+mempxs = bmem * kmem / ((kmem + Ca_submem) * (kmem + Ca_submem))
+    in [1]
+sarpxi = bsar * ksar / ((ksar + Ca_i) * (ksar + Ca_i))
+    in [1]
+sarpxs = bsar * ksar / ((ksar + Ca_submem) * (ksar + Ca_submem))
+    in [1]
+spxi = srmax * srkd / ((srkd + Ca_i) * (srkd + Ca_i))
+    in [1]
+spxs = srmax * srkd / ((srkd + Ca_submem) * (srkd + Ca_submem))
+    in [1]
+srkd = 0.6
+    in [uM]
+srmax = 47
+    in [uM]
+taud = 4
+    in [ms]
+taups = 0.5
+    in [ms]
+dot(tropi) = xbi
+    in [uM]
+dot(trops) = xbs
+    in [uM]
+xbi = xkon * Ca_i * (btrop - tropi) - xkoff * tropi
+    in [mol/m^3/s]
+xbs = xkon * Ca_submem * (btrop - trops) - xkoff * trops
+    in [mol/m^3/s]
+xkcal = 7
+    in [uM]
+xkoff = 0.0196
+    in [mS/uF]
+xkon = 0.0327
+    in [m^3/s/mol (1000000)]
+
+[Environment]
+F =  9.64853415000000041e1
+    in [C/mmol]
+FonRT = F / (R * T)
+    in [1/mV]
+R = 8.314472
+    in [J/mol/K]
+T = 308
+    in [K]
+time = 0 bind time
+    in [ms]
+
+[ICaL]
+Pr = 1 - 1 / (1 + exp(-(cell.V - vy) / sy))
+    in [1]
+Ps = 1 / (1 + exp(-(cell.V - vyr) / syr))
+    in [1]
+alpha = poinf / taupo
+    in [mS/uF]
+beta = (1 - poinf) / taupo
+    in [mS/uF]
+dot(c1) = alpha * c2 + k2 * xi1ca + k2t * xi1ba + r2 * po - (beta + r1 + k1t + k1) * c1
+    in [1]
+dot(c2) = beta * c1 + k5 * xi2ca + k5t * xi2ba - (k6 + k6t + alpha) * c2
+    in [1]
+cat = 3
+    in [uM]
+cpt = 6.09365
+    in [uM]
+fca = 1 / (1 + (cat / Ca.Ca_dyad) ^ 3)
+    in [1]
+gca = 182
+    in [mol/m/s/A (0.1)]
+jca = gca * po * rxa
+    in [mol/m^3/s]
+k1 = 0.024168 [mS/uF] * fca
+    in [mS/uF]
+k1t = 0.00413
+    in [mS/uF]
+k2 =  1.03615000000000003e-4
+    in [mS/uF]
+k2t = 0.00224
+    in [mS/uF]
+k3 = (1 - poi) / tau3
+    in [mS/uF]
+k3t = k3
+    in [mS/uF]
+k4 = k3 * alpha / beta * k1 / k2 * k5 / k6
+    in [mS/uF]
+k4t = k3t * alpha / beta * k1t / k2t * k5t / k6t
+    in [mS/uF]
+k5 = (1 - Ps) / tauca
+    in [mS/uF]
+k5t = (1 - Ps) / tauba
+    in [mS/uF]
+k6 = fca * Ps / tauca
+    in [mS/uF]
+k6t = Ps / tauba
+    in [mS/uF]
+pca = 0.00054
+    in [cm/s]
+po = 1 - xi1ca - xi2ca - xi1ba - xi2ba - c1 - c2
+    in [1]
+poi = 1 / (1 + exp(-(cell.V - vx) / sx))
+    in [1]
+poinf = 1 / (1 + exp(-(cell.V - vth) / s6))
+    in [1]
+r1 = 0.3
+    in [mS/uF]
+r2 = 3
+    in [mS/uF]
+recov = 10 [ms] + 4954 [ms] * exp(cell.V / 15.6 [mV])
+    in [ms]
+rxa = piecewise(abs(za) < 0.001, 4 * pca * Environment.F * Environment.FonRT * (Ca.csm * exp(za) - 0.341 * parameters.Ca_o) / (2 * Environment.FonRT), 4 * pca * cell.V * Environment.F * Environment.FonRT * (Ca.csm * exp(za) - 0.341 * parameters.Ca_o) / (exp(za) - 1))
+    in [mA/cm^2]
+s1 = 0.0182688 [mS/uF] * fca
+    in [mS/uF]
+s1t = 0.00195
+    in [mS/uF]
+s2 = s1 * r1 / r2 * k2 / k1
+    in [mS/uF]
+s2t = s1t * r1 / r2 * k2t / k1t
+    in [mS/uF]
+s6 = 8
+    in [mV]
+sx = 3
+    in [mV]
+sy = 4
+    in [mV]
+syr = 11.32
+    in [mV]
+tau3 = 3
+    in [ms]
+tau_ca = tca / (1 + (Ca.Ca_dyad / cpt) ^ 4) + 0.1 [ms]
+    in [ms]
+tauba = (recov - 450 [ms]) * Pr + 450 [ms]
+    in [ms]
+tauca = (recov - tau_ca) * Pr + tau_ca
+    in [ms]
+taupo = 1
+    in [ms]
+tca = 78.0329
+    in [ms]
+vth = 0
+    in [mV]
+vx = -40
+    in [mV]
+vy = -40
+    in [mV]
+vyr = -40
+    in [mV]
+dot(xi1ba) = k1t * c1 + k4t * xi2ba + s1t * po - (k3t + k2t + s2t) * xi1ba
+    in [1]
+dot(xi1ca) = k1 * c1 + k4 * xi2ca + s1 * po - (k3 + k2 + s2) * xi1ca
+    in [1]
+dot(xi2ba) = k3t * xi1ba + k6t * c2 - (k5t + k4t) * xi2ba
+    in [1]
+dot(xi2ca) = k3 * xi1ca + k6 * c2 - (k5 + k4) * xi2ca
+    in [1]
+xica = 2 * cell.wca * jca * (1.0 - parameters.ICaL_Block)
+    in [A/F]
+za = cell.V * 2 * Environment.FonRT
+    in [1]
+
+[IK1]
+aki = 1.02 [mS/uF] / (1 + exp(0.2385 [1/mV] * (cell.V - reversal_potentials.ek - 59.215 [mV])))
+    in [mS/uF]
+bki = (0.49124 [mS/uF] * exp(0.08032 [1/mV] * (cell.V - reversal_potentials.ek + 5.476 [mV])) + 1 [mS/uF] * exp(0.06175 [1/mV] * (cell.V - reversal_potentials.ek - 594.31 [mV]))) / (1 + exp(-0.5143 [1/mV] * (cell.V - reversal_potentials.ek + 4.753 [mV])))
+    in [mS/uF]
+gkix = 0.3
+    in [mS/uF]
+xik1 = gkix * sqrt(parameters.K_o / 5.4 [mM]) * xkin * (cell.V - reversal_potentials.ek) * (1.0 - parameters.IK1_Block)
+    in [A/F]
+xkin = aki / (aki + bki)
+    in [1]
+
+[IKr]
+gkr = 0.0125
+    in [mS/uF]
+rg = 1 / (1 + exp((cell.V + 33 [mV]) / 22.4 [mV]))
+    in [1]
+taukr = 1 / (xkrv1 + xkrv2)
+    in [ms]
+xikr = gkr * sqrt(parameters.K_o / 5.4 [mM]) * xr * rg * (cell.V - reversal_potentials.ek) * (1.0 - parameters.IKr_Block)
+    in [A/F]
+xkrinf = 1 / (1 + exp(-(cell.V + 50 [mV]) / 7.5 [mV]))
+    in [1]
+xkrv1 = piecewise(abs(cell.V + 7 [mV]) > 0.001 [mV], 0.00138 [mS/uF] * 1 [1/mV] * (cell.V + 7 [mV]) / (1 - exp(-0.123 [1/mV] * (cell.V + 7 [mV]))), 0.00138 [mS/uF] / 0.123)
+    in [mS/uF]
+xkrv2 = piecewise(abs(cell.V + 10 [mV]) > 0.001 [mV], 0.00061 [mS/uF] * 1 [1/mV] * (cell.V + 10 [mV]) / (exp(0.145 [1/mV] * (cell.V + 10 [mV])) - 1), 0.00061 [mS/uF] / 0.145)
+    in [mS/uF]
+dot(xr) = (xkrinf - xr) / taukr
+    in [1]
+
+[IKs]
+gks = 0.1386
+    in [mS/uF]
+gksx = 1 + 0.8 / (1 + (0.5 [uM] / Ca.Ca_i) ^ 3)
+    in [1]
+tauxs1 = piecewise(abs(cell.V + 30 [mV]) < 0.001 [mV] / 0.0687, 1 [ms] / (7.19e-5 / 0.148 + 0.000131 / 0.0687), 1 [ms] / (7.19e-5 [1/mV] * (cell.V + 30 [mV]) / (1 - exp(-0.148 [1/mV] * (cell.V + 30 [mV]))) + 0.000131 [1/mV] * (cell.V + 30 [mV]) / (exp(0.0687 [1/mV] * (cell.V + 30 [mV])) - 1)))
+    in [ms]
+tauxs2 = 4 * tauxs1
+    in [ms]
+xiks = gks * gksx * xs1 * xs2 * (cell.V - reversal_potentials.eks) * (1.0 - parameters.IKs_Block)
+    in [A/F]
+dot(xs1) = (xs1ss - xs1) / tauxs1
+    in [1]
+xs1ss = 1 / (1 + exp(-(cell.V - 1.5 [mV]) / 16.7 [mV]))
+    in [1]
+dot(xs2) = (xs2ss - xs2) / tauxs2
+    in [1]
+xs2ss = xs1ss
+    in [1]
+
+[INa]
+ah = piecewise(cell.V < -40 [mV], 0.135 [mS/uF] * exp((80 [mV] + cell.V) / -6.8 [mV]), 0 [mS/uF])
+    in [mS/uF]
+aj = piecewise(cell.V < -40 [mV], (-127140 [mS/uF] * exp(0.2444 [1/mV] * cell.V) - 3.474e-5 [mS/uF] * exp(-0.04391 [1/mV] * cell.V)) * 1 [1/mV] * (cell.V + 37.78 [mV]) / (1 + exp(0.311 [1/mV] * (cell.V + 79.23 [mV]))), 0 [mS/uF])
+    in [mS/uF]
+am = piecewise(abs(cell.V + 47.13 [mV]) > 0.001 [mV], 0.32 [mS/uF] * 1 [1/mV] * (cell.V + 47.13 [mV]) / (1 - exp(-0.1 [1/mV] * (cell.V + 47.13 [mV]))), 3.2 [mS/uF])
+    in [mS/uF]
+bh = piecewise(cell.V < -40 [mV], 3.56 [mS/uF] * exp(0.079 [1/mV] * cell.V) + 310000 [mS/uF] * exp(0.35 [1/mV] * cell.V), 1 [mS/uF] / (0.13 * (1 + exp((cell.V + 10.66 [mV]) / -11.1 [mV]))))
+    in [mS/uF]
+bj = piecewise(cell.V < -40 [mV], 0.1212 [mS/uF] * exp(-0.01052 [1/mV] * cell.V) / (1 + exp(-0.1378 [1/mV] * (cell.V + 40.14 [mV]))), 0.3 [mS/uF] * exp(-2.535e-7 [1/mV] * cell.V) / (1 + exp(-0.1 [1/mV] * (cell.V + 32 [mV]))))
+    in [mS/uF]
+bm = 0.08 [mS/uF] * exp(-cell.V / 11 [mV])
+    in [mS/uF]
+gna = 12
+    in [mS/uF]
+dot(xh) = ah * (1 - xh) - bh * xh
+    in [1]
+xina = gna * xh * xj * xm * xm * xm * (cell.V - reversal_potentials.ena) * (1.0 - parameters.INa_Block)
+    in [A/F]
+dot(xj) = aj * (1 - xj) - bj * xj
+    in [1]
+dot(xm) = am * (1 - xm) - bm * xm
+    in [1]
+
+########################################################
+[I_Na_Markov]
+# this state dependence of Na channel was from Moreno et al 2011 (Sci. Transl. Med)
+# contains free, charged, neutral drug
+
+class1_drug_cat = 3
+Lidocaine_fact = if(class1_drug_cat==2 and new_drug_mode==0, 1, 0) ## example for Ib
+Flecainide_fact = if(class1_drug_cat==3 and new_drug_mode==0, 1, 0) ## example for Ic
+Vernakalant_fact = if(class1_drug_cat==4 and new_drug_mode==0, 1, 0) 
+
+x1 = 0.36074068186699165
+x2 = 0.67947767489963651
+x3 = 1.4181189960289569
+x4 = 0.6642892365971278
+x5 = 2.2262983343828586
+x6 = 2.7462799132769664
+x7 = 3.7291786844606944
+x8 = 0.76114048789324507
+x9 = 0.51941826904556065
+x10 = 0.16354687278047286
+x11 = 0.78283058240715697
+x12 = 0.95431854763454882
+x13 = 1.4945119912466263
+x14 = 1.0328344
+x15 = 0.99481919
+x16 = 1.00254845
+x17 = 1.01096423
+x18 = 1.37052465
+x19 = 1.0572724565237737
+x20 = 0.755084427579001
+x21 = 0.9911675441375104
+x22 = 1.1141648721471809
+x23 = 0.7400221830311837
+x24 = 0.6867087130674105
+x25 = 0.9613389122782059
+
+f1 = 1.0816955465854639 #15802.517082265076
+f2 = 1.0638821583447675 #11212.49445307003
+f3 = 0.96880302755353975 #1.0835911457972944
+f4 = 0.99499885442728475 #4.7213138217409707
+f5 = 0.98701452696999925 #1.1886854610200599
+f6 = 0.94801359673815977 #1.1293915676022106
+f7 = 1.0657706586087707 #0.98647121091698153
+f8 = 6.9711303443808159 #0.54542349779755606
+f9 = 0.99676656025489807 #1.020713680006784
+f10 = 1.1495533255841677 #2.6609951303941308
+f11 = 1.0019692943717207 #1.1411905523331658
+f12 = 1.1216846624504933 #5.3540204782968566
+f13 = 0.98221829494224999 #1.028853996176295
+f14 = 1.0005237952589077 #1.0033797797467918
+
+l1 = 1.36922845112808845e+04
+l2 = 1.36922845112808845e+04
+l3 = 9.75801811222358206e-01
+l4 = 4.78855031291120348e+00
+l5 = 9.75801811222358206e-01
+l6 = 9.78288593348167645e-01
+l7 = 9.78288593348167645e-01
+l8 = 9.05788719283946997e-01
+l9 = 9.05788719283946997e-01
+l10 = 4.84105307990853273e+00
+
+v1 = 7170.4622644564224
+v2 = 15352.068978379524
+v3 = 0.78329295519833497
+v4 = 6.2271179964787571
+v5 = 22.10184390723893
+v6 = 1.5107146709941404
+v7 = 1.0935642293370962
+v8 = 0.65910138578597266
+v9 = 2.3700350948377
+v10 = 6.2071593539114822
+v11 = 0
+v12 = 0
+v13 = 0
+v14 = 0
+
+#### new drug components ####
+new_drug_mode = 0
+n_diffusion = 0
+n_kd_open = 0
+n_k_off = 0
+n_ki_off = 0
+n_kc_off = 0
+n_p22 = 0
+n_p23 = 0
+n_p24 = 0
+n_p25 = 0
+n_p26 = 0
+n_p27 = 0
+n_p28 = 0
+n_p29 = 0
+n_p30 = 0
+n_p31 = 0
+n_p32 = 0
+n_p33 = 0
+n_p34 = 0
+n_p35 = 0
+
+diffusion = ((new_drug_mode*n_diffusion) + (Flecainide_fact*5500) + (Lidocaine_fact*500) + (Vernakalant_fact*500)) #in [1 / M ms]
+kd_open = ((new_drug_mode*n_kd_open) + (Flecainide_fact*11.2e-6) + (Lidocaine_fact*318e-6) + (Vernakalant_fact*318e-6)) * exp(-0.7 * cell.V * Environment.F / (Environment.R * Environment.T))
+conc = 0
+pH = 7.4
+pKa_newdrug = 7.4
+pKa_Lidocaine = 7.6
+pKa_Flecainide = 9.3
+pKa_Vernakalant = 5.4
+#pH = (if(Lidocaine_fact==1, pH_Lidocaine, 0)) + (if(Flecainide_fact==1, pH_Flecainide, 0)) + (if(new_drug_mode==1, pH_newdrug, 0))
+pKa = (if(Vernakalant_fact==1, pKa_Vernakalant, 0)) + (if(Lidocaine_fact==1, pKa_Lidocaine, 0)) + (if(Flecainide_fact==1, pKa_Flecainide, 0)) + (if(new_drug_mode==1, pKa_newdrug, 0))
+portion = 1/(1+10^(pH-pKa))
+conc_dplus = portion * conc
+conc_d = (1-portion) * conc
+
+kon = conc_dplus * diffusion #if(conc_dplus>0.0001, conc_dplus * diffusion, 1e-8) #### for protonated drugs
+kcon = kon
+koff = kd_open * diffusion
+kcoff = koff
+
+k_on = conc_d * diffusion #if(conc_d>0.0001, , 1e-8) #### for neutral drugs
+k_off = ((new_drug_mode*n_k_off) + (Flecainide_fact*400e-6) + (Lidocaine_fact*400e-6) + (Vernakalant_fact*400e-6)) * diffusion
+ki_on = k_on / 2
+ki_off = ((new_drug_mode*n_ki_off) + (Flecainide_fact*5.4e-6) + (Lidocaine_fact*3.4e-6) + (Vernakalant_fact*3.4e-6)) * diffusion
+kc_on = k_on / 2
+kc_off = ((new_drug_mode*n_kc_off) + (Flecainide_fact*800e-6) + (Lidocaine_fact*900e-6) + (Vernakalant_fact*900e-6)) * diffusion
+
+Tfactor = 1 / (3 ^ ((37 - (Environment.T - 273)) / 10.0)) #0.19245
+
+# Transition rates (ms-1)  
+a11 = Tfactor * p1 / (p2 * exp(-(cell.V - actshift) / p3) + p6 * exp(-(cell.V - actshift) / p7))
+a12 = Tfactor * p1 / (p2 * exp(-(cell.V - actshift) / p4) + p6 * exp(-(cell.V - actshift) / p7))
+a13 = Tfactor * p1 / (p2 * exp(-(cell.V - actshift) / p5) + p6 * exp(-(cell.V - actshift) / p7))
+b11 = Tfactor * p8 * exp(-(cell.V - actshift) / p9)
+b12 = Tfactor * p10 * exp(-(cell.V - actshift - p11) / p9)
+b13 = Tfactor * p12 * exp(-(cell.V - actshift - p13) / p9)
+#a3 = p14 * exp(-cell.V / p15)
+#b3 = p16 * exp(cell.V / p17)
+#aa = a3 / (a3 + b3)
+#tau = 1 / (a3 + b3)
+a3_ss = 1/(1+exp((cell.V - p14_new) / p15_new))
+a3_tau = h1 + p01 * exp(p16_new * (cell.V - p14_new)) / (1 + exp(p17_new * (cell.V - p14_new)))
+a3 = Tfactor * a3_ss / a3_tau
+b3 = Tfactor * (1 - a3_ss) / a3_tau
+a2 = Tfactor * p18 * exp(cell.V / p19)
+b2 = (a13*a2*a3) / (b13*b3)
+ax = p20 * a2
+bx = p21 * a3
+
+a13c = p22 * a13
+b13c = if(kon>0, (b13 * kcon * koff * a13c) / (kon * kcoff * a13), 0)
+a13n = p23 * a13
+b13n = if(k_on>0, (b13 * kc_on * a13n * k_off) / (kc_off * a13 * k_on), 0)
+ax1 = p24 * ax
+bx1 = p25 * bx
+ax2 = p26 * ax
+bx2 = if(ki_on>0, (bx * k_on * ax2 * ki_off) / (ax * ki_on * k_off), 0)
+a22 = p27 * a2
+a_22 = p28 * a2
+b22 = if(b13c>0, (a13c * a22 * a33) / (b13c * b33), 0)
+b_22 = if(b13n>0, (a_33 * a13n * a_22) / (b_33 * b13n), 0)
+b33 = p29 * b3
+b_33 = p30 * b3
+a33 = p31 * a3
+a_33 = if(ki_on>0, (ki_off * a3 * kc_on * b_33) / (ki_on * kc_off * b3), 0)
+## DIT or DpIT ONLY in Lidocaine (Inactivated, Trapped state)
+a44 = p32 * a2
+b44 = p33 * a3
+a_44 = p34 * a2
+b_44 = p35 * a2
+
+actshift = -15*x19
+h1 = 2*x20
+p1 = 8.5539*x1
+p2 = 7.4392e-2*x2
+p3 = 17.0*x3
+p4 = 15.0*x4
+p5 = 12.0*x5
+p6 = 2.0373e-1*x6
+p7 = 150*x7
+p8 = 7.5215e-2*x8
+p9 = 20.3*x9
+p10 = 2.7574*x10
+p11 = 5*x11
+p12 = 4.7755e-1*x12
+p13 = 10*x13
+p14 = 5.1458e-6 #5.1458e-6 *1.0325463712122342
+p15 = 8.2471 #0.8*8.2471 * 0.10401603829601243
+p16 = 6.1205 #6.1205 * 0.96668483687506801
+p17 = 12.542 #0.8*12.542 * 1.0908872227689068
+p18 = 13.370*x14
+p19 = 43.749*x15
+p20 = 3.4229e-2*x16
+p21 = 1.7898e-2*x17
+p14_new = -70*x21
+p15_new = 3.5*x22
+p16_new = 0.052 * 2.9*x23
+p17_new = 0.132 * 1.9*x24
+p01 = 41*x25
+
+p22 = (new_drug_mode*n_p22) + (Flecainide_fact*3.6324e-3*f1) + (Lidocaine_fact*5.6974e-03*l1) + (Vernakalant_fact*5.6974e-03*v1) #3.6324e-3
+p23 = (new_drug_mode*n_p23) + (Flecainide_fact*2.6452*f2) + (Lidocaine_fact*8.4559e+01*l2) + (Vernakalant_fact*8.4559e+01*v2) #2.6452
+p24 = (new_drug_mode*n_p24) + (Flecainide_fact*5.7831e-5*f3) + (Lidocaine_fact*6.3992e-07*l3) + (Vernakalant_fact*6.3992e-07*v3) #5.7831e-5
+p25 = (new_drug_mode*n_p25) + (Flecainide_fact*1.6689e-8*f4) + (Lidocaine_fact*1.3511e+00*l4) + (Vernakalant_fact*1.3511e+00*v4) #1.6689e-8
+p26 = (new_drug_mode*n_p26) + (Flecainide_fact*2.6126e-01*f5) + (Lidocaine_fact*1.3110e-01*l5) + (Vernakalant_fact*1.3110e-01*v5) #2.6126e-01
+p27 = (new_drug_mode*n_p27) + (Flecainide_fact*1.4847e3*f6) + (Lidocaine_fact*6.7067e-06*l6) + (Vernakalant_fact*6.7067e-06*v6) #1.4847e3
+p28 = (new_drug_mode*n_p28) + (Flecainide_fact*4.2385e+01*f7) + (Lidocaine_fact*1.7084e-05*l7) + (Vernakalant_fact*1.7084e-05*v7) #4.2385e+01
+p29 = (new_drug_mode*n_p29) + (Flecainide_fact*1.7352e-6*f8) + (Lidocaine_fact*1.9698e-05*l8) + (Vernakalant_fact*1.9698e-05*v8) #1.7352e-6
+p30 = (new_drug_mode*n_p30) + (Flecainide_fact*2.1181e+00*f9) + (Lidocaine_fact*4.8477*l9) + (Vernakalant_fact*4.8477*v9) #2.1181e+00
+p31 = (new_drug_mode*n_p31) + (Flecainide_fact*6.7505e-05*f10) + (Lidocaine_fact*3.2976*l10) + (Vernakalant_fact*3.2976*v10) #6.7505e-05
+p32 = (new_drug_mode*n_p32) + (Flecainide_fact*2.4135*f11) + (Lidocaine_fact*0) + (Vernakalant_fact*2.4135*v11)
+p33 = (new_drug_mode*n_p33) + (Flecainide_fact*4.9001e-2*f12) + (Lidocaine_fact*0) + (Vernakalant_fact*4.9001e-2*v12) 
+p34 = (new_drug_mode*n_p34) + (Flecainide_fact*1.0326e-03*f13) + (Lidocaine_fact*0) + (Vernakalant_fact*1.0326e-03*v13) 
+p35 = (new_drug_mode*n_p35) + (Flecainide_fact*2.1378e-02*f14) + (Lidocaine_fact*0) + (Vernakalant_fact*2.1378e-02*v14)
+
+dot(IC3) = -IC3 * (a11 + a3 + ki_on) + IC2 * b11 + C3 * b3 + ki_off * DIC3
+dot(IC2) = -IC2 * (b11 + a3 + a12 + ki_on) + IC3 * a11 + IF * b12 + C2 * b3 + ki_off * DIC2
+dot(IF) = -IF * (b12 + a3 + b2 + ki_on) + IC2 * a12 + C1 * b3 + O * a2 + ki_off * DIF
+dot(C3) = -C3 * (b3 + a11 + kcon + kc_on) + IC3 * a3 + C2 * b11 + DpC3 * kcoff + DC3 * kc_off
+dot(C2) = -C2 * (b11 + b3 + a12 + kcon + kc_on) + C3 * a11 + IC2 * a3 + C1 * b12 + DpC2 * kcoff + DC2 * kc_off
+dot(C1) = -C1 * (b12 + b3 + a13 + kcon + kc_on) + C2 * a12 + IF * a3 + O * b13 + DpC1 * kcoff + DC1 * kc_off
+dot(O) = -O * (b13 + a2 + ax + kon + k_on) + C1 * a13 + IF * b2 + IS * bx + DpO * koff + DO * k_off
+dot(IS) = -IS * (bx + ki_on) + O * ax + DIS * ki_off
+
+dot(DpIC3) = -DpIC3 * (a33 + a11) + DpIC2 * b11 + DpC3 * b33
+dot(DpIC2) = -DpIC2 * (b11 + a33 + a12) + DpIC3 * a11 + DpIF * b12 + DpC2 * b33
+dot(DpIF) = -DpIF * (b12 + a33 + b22 + a44) + DpIC2 * a12 + DpC1 * b33 + DpO * a22 + DpIT * b44
+dot(DpC3) = -DpC3 * (b33 + a11 + kcoff) + DpIC3 * a33 + DpC2 * b11 + C3 * kcon
+dot(DpC2) = -DpC2 * (b11 + b33 + a12 + kcoff) + DpC3 * a11 + DpIC2 * a33 + DpC1 * b12 + C2 * kcon
+dot(DpC1) = -DpC1 * (b12 + b33 + a13c + kcoff) + DpC2 * a12 + DpIF * a33 + DpO * b13c + C1 * kcon
+dot(DpO) = -DpO * (b13c + a22 + ax1 + koff) + DpC1 * a13c + DpIF * b22 + DpIS * bx1 + O * kon
+dot(DpIS) = -DpIS * (bx1) + DpO * ax1
+dot(DpIT) = -DpIT * b44 + DpIF * a44
+
+dot(DIC3) = -DIC3 * (a_33 + a11 + ki_off) + DIC2 * b11 + DC3 * b_33 + ki_on * IC3
+dot(DIC2) = -DIC2 * (b11 + a_33 + a12 + ki_off) + DIC3 * a11 + DIF * b12 + DC2 * b_33 + ki_on * IC2
+dot(DIF) = -DIF * (b12 + a_33 + b_22 + a_44 + ki_off) + DIC2 * a12 + DC1 * b_33 + DO * a_22 + DIT * b_44 + ki_on * IF
+dot(DC3) = -DC3 * (b_33 + a11 + kc_off) + DIC3 * a_33 + DC2 * b11 + C3 * kc_on
+dot(DC2) = -DC2 * (b11 + b_33 + a12 + kc_off) + DC3 * a11 + DIC2 * a_33 + DC1 * b12 + C2 * kc_on
+dot(DC1) = -DC1 * (b12 + b_33 + a13n + kc_off) + DC2 * a12 + DIF * a_33 + DO * b13n + C1 * kc_on
+dot(DO) = -DO * (b13n + a_22 + ax2 + k_off) + DC1 * a13n + DIF * b_22 + DIS * bx2 + O * k_on
+dot(DIS) = -DIS * (bx2 + ki_off) + DO * ax2 + IS * ki_on
+dot(DIT) = -DIT * b_44 + DIF * a_44
+
+#E_Na = (phys.RTF) * log(138/10)
+g_Na = x18*7.8 *1.0 *4.5 #7.8 *1.0 * 1.1 #*53
+    in [1/ms]
+I_Na_tot = (1 - parameters.INa_Block) * g_Na * O * (cell.V - reversal_potentials.ena)
+    in [pA]
+
+########################################################
+
+[INaCa]
+aloss = 1 / (1 + (xkdna / Ca.Ca_submem) ^ 3)
+    in [1]
+gNaCa = 0.84
+    in [mol/m^3/s]
+jNaCa = gNaCa * aloss * zw3 / (zw4 * zw8)
+    in [mol/m^3/s]
+xiNaCa = cell.wca * jNaCa * (1.0 - parameters.INCX_Block)
+    in [A/F]
+xkdna = 0.3
+    in [uM]
+xmcai = 0.0036
+    in [mM]
+xmcao = 1.3
+    in [mM]
+xmnai = 12.3
+    in [mM]
+xmnao = 87.5
+    in [mM]
+yz1 = xmcao * Na.Na_i ^ 3 + xmnao ^ 3 * Ca.csm
+    in [mol^4/m^12]
+yz2 = xmnai ^ 3 * parameters.Ca_o * (1 + Ca.csm / xmcai)
+    in [mol^4/m^12]
+yz3 = xmcai * parameters.Na_o ^ 3 * (1 + (Na.Na_i / xmnai) ^ 3)
+    in [mol^4/m^12]
+yz4 = Na.Na_i ^ 3 * parameters.Ca_o + parameters.Na_o ^ 3 * Ca.csm
+    in [mol^4/m^12]
+zw3 = Na.Na_i ^ 3 * parameters.Ca_o * exp(cell.V * 0.35 * Environment.FonRT) - parameters.Na_o ^ 3 * Ca.csm * exp(cell.V * (0.35 - 1) * Environment.FonRT)
+    in [mol^4/m^12]
+zw4 = 1 + 0.2 * exp(cell.V * (0.35 - 1) * Environment.FonRT)
+    in [1]
+zw8 = yz1 + yz2 + yz3 + yz4
+    in [mol^4/m^12]
+
+[INaK]
+fNaK = 1 / (1 + 0.1245 * exp(-0.1 * cell.V * Environment.FonRT) + 0.0365 * sigma * exp(-cell.V * Environment.FonRT))
+    in [1]
+gNaK = 1.5
+    in [A/F]
+sigma = (exp(parameters.Na_o / 67.3 [mM]) - 1) / 7
+    in [1]
+xiNaK = gNaK * fNaK * Na.Na_i / (Na.Na_i + xkmnai) * parameters.K_o / (parameters.K_o + xkmko) * (1.0 - parameters.INaK_Block)
+    in [A/F]
+xkmko = 1.5
+    in [mM]
+xkmnai = 12
+    in [mM]
+
+[Ileak_Iup_Ixfer]
+cup = 0.5
+    in [uM]
+gleak = 2.069e-5
+    in [mS/uF]
+jleak = gleak * Ca.Ca_NSR * Ca.Ca_NSR / (Ca.Ca_NSR * Ca.Ca_NSR + kj * kj) * (Ca.Ca_NSR * 16.667 - Ca.Ca_i)
+    in [mol/m^3/s]
+jup = vup * Ca.Ca_i * Ca.Ca_i / (Ca.Ca_i * Ca.Ca_i + cup * cup)
+    in [mol/m^3/s]
+kj = 50
+    in [uM]
+vup = 0.4
+    in [mol/m^3/s]
+
+[Irel]
+dot(Ca_JSR) = (Ca.Ca_NSR - Ca_JSR) / taua
+    in [uM]
+Qr = Ca.Ca_NSR * Qr0 / cstar
+    in [mol/m^3/s]
+Qr0 = piecewise(Ca_JSR > 50 [uM] and Ca_JSR < cstar, (Ca_JSR - 50 [uM]) / 1 [ms], Ca_JSR >= cstar, av * Ca_JSR + bv, 0 [mol/m^3/s])
+    in [mol/m^3/s]
+av = 11.3
+    in [mS/uF]
+ax = 0.3576
+    in [1/mV]
+ay = 0.05
+    in [1/mV]
+bv = (1 [mS/uF] - av) * cstar - 50 [mol/m^3/s]
+    in [mol/m^3/s]
+cstar = 90
+    in [uM]
+gbarsr = 26841.8
+    in [1]
+gdyad = 9000
+    in [mol/m/s/A (0.1)]
+gryr = 2.58079
+    in [mS/uF]
+sparkV = exp(-ay * (cell.V + 30 [mV])) / (1 + exp(-ay * (cell.V + 30 [mV])))
+    in [1]
+spark_rate = gryr / 1 [mA/cm^2] * ICaL.po * abs(ICaL.rxa) * sparkV
+    in [mS/uF]
+taua = 100
+    in [ms]
+taur = 30
+    in [ms]
+xicap = ICaL.po * gdyad * abs(ICaL.rxa)
+    in [mol/m^3/s]
+dot(xir) = spark_rate * Qr - xir * (1 - taur * Ca.dCa_JSR / Ca.Ca_NSR) / taur
+    in [mol/m^3/s]
+xirp = ICaL.po * Qr * abs(ICaL.rxa) * gbarsr / 1 [mA/cm^2] * exp(-ax * (cell.V + 30 [mV])) / (1 + exp(-ax * (cell.V + 30 [mV])))
+    in [mol/m^3/s]
+xiryr = xirp + xicap
+    in [mol/m^3/s]
+
+[Ito]
+gtof = 0.11
+    in [mS/uF]
+gtos = 0.04
+    in [mS/uF]
+rs_inf = 1 / (1 + exp(rt2))
+    in [1]
+rt1 = -(cell.V + 3 [mV]) / 15 [mV]
+    in [1]
+rt2 = (cell.V + 33.5 [mV]) / 10 [mV]
+    in [1]
+rt3 = (cell.V + 60 [mV]) / 10 [mV]
+    in [1]
+rt4 = -cell.V / 30 [mV] * cell.V / 30 [mV]
+    in [1]
+rt5 = (cell.V + 33.5 [mV]) / 10 [mV]
+    in [1]
+txf = 3.5 [ms] * exp(rt4) + 1.5 [ms]
+    in [ms]
+txs = 9 [ms] / (1 + exp(-rt1)) + 0.5 [ms]
+    in [ms]
+tyf = 20 [ms] / (1 + exp(rt5)) + 20 [ms]
+    in [ms]
+tys = 3000 [ms] / (1 + exp(rt3)) + 30 [ms]
+    in [ms]
+xito = xitos + xitof
+    in [A/F]
+xitof = gtof * xtof * ytof * (cell.V - reversal_potentials.ek) * (1.0 - parameters.Ito_Block)
+    in [A/F]
+xitos = gtos * xtos * (ytos + 0.5 * rs_inf) * (cell.V - reversal_potentials.ek) * (1.0 - parameters.Ito_Block)
+    in [A/F]
+dot(xtof) = (xtof_inf - xtof) / txf
+    in [1]
+xtof_inf = xtos_inf
+    in [1]
+dot(xtos) = (xtos_inf - xtos) / txs
+    in [1]
+xtos_inf = 1 / (1 + exp(rt1))
+    in [1]
+dot(ytof) = (ytof_inf - ytof) / tyf
+    in [1]
+ytof_inf = ytos_inf
+    in [1]
+dot(ytos) = (ytos_inf - ytos) / tys
+    in [1]
+ytos_inf = 1 / (1 + exp(rt2))
+    in [1]
+
+[Na]
+dot(Na_i) = -(INa.xina + 3 * INaK.xiNaK + 3 * INaCa.xiNaCa) / (cell.wca * 1000 [1 (0.001)])
+    in [mM]
+
+[membrane]
+markov_Na = 1
+
+[cell]
+markov_Na = membrane.markov_Na
+level = 0 bind pace    
+Itotal = -((if(markov_Na == 1, I_Na_Markov.I_Na_tot,INa.xina)) + IK1.xik1 + IKr.xikr + IKs.xiks + Ito.xito + INaCa.xiNaCa + ICaL.xica + INaK.xiNaK + i_Stim)
+    in [A/F]
+dot(V) = Itotal
+    in [mV]
+#i_Stim = piecewise(Environment.time - past >= stim_offset and Environment.time - past <= stim_offset + stim_duration, stim_amplitude, 0 [A/F])
+i_Stim = level * stim_amplitude * stim_duration
+    in [A/F]
+past = floor(Environment.time / stim_period) * stim_period
+    in [ms]
+stim_amplitude = -15
+    in [A/F]
+stim_duration = 3
+    in [ms]
+stim_offset = 0
+    in [ms]
+stim_period = 400
+    in [ms]
+wca = 8
+    in [g*m^5/s^3/A/mol (1000)]
+
+i_diff = 0 bind diffusion_current
+    
+[reversal_potentials]
+K_i = 140
+    in [mM]
+ek = 1 / Environment.FonRT * log(parameters.K_o / K_i)
+    in [mV]
+eks = 1 / Environment.FonRT * log((parameters.K_o + prNaK * parameters.Na_o) / (K_i + prNaK * Na.Na_i))
+    in [mV]
+ena = 1 / Environment.FonRT * log(parameters.Na_o / Na.Na_i)
+    in [mV]
+prNaK = 0.01833
+    in [1]
+
+[parameters]
+ICaL_Block = 0.0
+IK1_Block = 0.0
+IKr_Block = 0.0
+IKs_Block = 0.0
+IKur_Block = 0.0
+INa_Block = 0.0
+INaL_Block = 0.0
+INaK_Block = 0.0
+INCX_Block = 0.0
+Ito_Block = 0.0
+
+Ca_o = 1.8
+    in [mM]
+K_o = 5.4
+    in [mM]
+Na_o = 136
+    in [mM]
+
+[[protocol]]
+# Level  Start    Length   Period   Multiplier
+1.0      0.0    1.0      1000.0   0
+
+[[script]]
+import matplotlib.pyplot as pl
+import myokit
+
+# Control AP - Mahajan Shiferaw (2008)
+x = [1.15732975511571	,11.019792016102	,10.1979201610198	,8.38644750083864	,7.88326065078832	,7.24589064072464	,6.67561221066759	,7.95035223079506	,10.4159677960416	,16.3367997316337	,29.0003354579	,43.7437101643744	,58.5709493458571	,69.959745051996	,80.7279436430728	,91.529688024153	,101.660516605166	,112.613217041261	,121.418986917142	,129.537068097954	,135.491445823549	,142.250922509225	,150.436095270044	,158.034216705803	,164.122777591412	,171.637034552164	,177.121771217712	,186.011405568601	,194.666219389467	,206.725930895673	,222.978866152298	,238.477021133848	,253.991949010399	,270.882254277088	,294.850721234485	,317.393492116739	,337.839651123784	,369.557195571956]
+y = [-89.5253270714526	,-89.5840322039584,	-74.9958067762496	,-42.8421670580342	,-8.91060046964105	,14.9027172089903	,37.5251593425025	,27.3985239852399	,21.1338477021134	,16.0390808453539	,16.2613217041261	,17.0664206642066	,16.3829251928883	,14.2318014089232	,10.5962764173096	,6.36531365313652	,1.5431063401543	,-5.36732640053675,	-11.669741697417,	-18.2656826568266,	-23.9558872861456	,-31.4365984568937,	-39.2234149614224,	-49.090070446159,	-57.1620261657162,	-65.540087219054,	-75.3941630325394,	-83.1851727608185,	-86.8081180811809	,-88.3679973163368,	-89.3575981214358,	-89.4498490439451	,-89.8398188527341,	-89.6427373364643,	-90.0830258302584,	-90.2172089902718,	-90.6365313653137,	-91.1229453203624]
+
+# Control CaT - Mahajan Shiferaw (2008)
+a = [0.840336134453764,	12.6050420168067,	17.6470588235294	,20.1680672268908,	22.6890756302521	,25.2100840336134	,27.7310924369748,	30.2521008403361,	31.0924369747899,	34.4537815126051,	36.9747899159664	,39.4957983193277	,42.0168067226891	,45.3781512605042	,50.4201680672269	,56.3025210084034	,63.8655462184874	,73.9495798319328	,92.436974789916	,109.243697478992	,121.848739495798,	131.932773109244,	142.016806722689	,152.941176470588,	163.025210084034,	174.789915966387	,187.394957983193,	203.361344537815,	219.327731092437,	238.655462184874,	261.344537815126,	287.394957983193,	314.285714285714,	341.176470588235,	363.865546218487]
+b = [0.260986254967103,	0.256517490717217	,0.279851475473911,	0.304696762425901,	0.329542049377891,	0.360588886717478,	0.391635724057065,	0.422682561396652,	0.456804116995636,	0.497166308383819,	0.5406162464986,	0.579415021822683,	0.615113021952967,	0.646172887759755,	0.692762686469937,	0.734714350856622,	0.772040909387011	,0.797003452543808,	0.803491629209824	,0.772744446615856,	0.740381734088984,	0.70953032375741,	0.667826200247541,	0.624584717607974,	0.582880594098104,	0.536551364731939,	0.493335939026774	,0.448622239593512,	0.413210865741646,	0.376301218161683,	0.345645234838121	,0.316591752980262,	0.290652074783402,	0.272464334571038	,0.261963390007166]
+
+# Control CaT bcl400 - Mahajan Shiferaw (2008)
+cc = [3.44827586206907, 3.44827586206907, 3.44827586206907, 3.44827586206907, 3.44827586206907, 3.44827586206907, 3.44827586206907, 17.2413793103449, 48.2758620689656, 72.4137931034484, 86.2068965517242, 100, 113.793103448276 , 127.586206896552 , 141.379310344828 , 155.172413793104 , 165.51724137931, 175.862068965517 , 200 ,262.068965517242 , 334.48275862069 ,372.413793103449 ,375.862068965518 ,375.862068965518 ,375.862068965518 ,375.862068965518 ,375.862068965518 ,375.862068965518 ,375.862068965518 ,396.551724137931 ,424.137931034483 ,458.620689655173 ,486.206896551725 ,506.896551724138 ,524.137931034483 ,541.379310344828 ,562.068965517242 ,617.241379310345 ,665.517241379311 ,741.379310344828 ,741.379310344828 ,744.827586206897 ,744.827586206897 ,744.827586206897 ,744.827586206897 ,748.275862068966 ,768.96551724138 ,817.241379310345 ,848.275862068966 ,875.862068965518 ,889.655172413794 ,906.896551724139 ,924.137931034483]
+dd = [-76.9396551724138,-58.1896551724138,-36.9396551724138,-6.93965517241384,25.5603448275861, 54.3103448275861,78.0603448275861,50.6465517241379,53.3405172413792,47.2413793103447,42.3275862068965,34.9137931034482, 23.7499999999999, 11.3362068965517,-4.82758620689657,-24.7413793103449,-42.176724137931,-59.6120689655173,-76.9612068965517,-77.823275862069, -77.3706896551724,-74.6336206896551,-57.1120689655172,-29.6120689655173,-0.862068965517267,29.1379310344827,52.8879310344827, 71.6379310344827, 80.3879310344827, 53.0172413793103, 54.4396551724137, 43.4051724137931, 26.0775862068965, 3.70689655172413, -17.4353448275862, -46.0775862068965, -70.948275862069, -73.103448275862, -74.051724137931, -76.0775862068965, -46.0775862068966, -19.8060344827587, 6.44396551724134, 32.6939655172413, 56.4439655172413, 80.2155172413792, 56.5948275862068, 50.6465517241379, 34.5905172413793, 4.76293103448273, -15.1508620689655, -40.0431034482758, -67.4353448275862]
+
+# Get model and protocol, create simulation
+m = get_model()
+p = get_protocol()
+s = myokit.Simulation(m, p)
+
+# Run simulation
+d = s.run(1000)
+
+# Get the first state variable's name
+first_state = m.states().next()
+var = first_state.qname()
+
+# Display the results
+pl.figure()
+pl.plot(x,y,'-k', d['Environment.time'], d['cell.V'], '-r')
+
+pl.figure()
+pl.plot(a, b, '-k', d['Environment.time'], d['Ca.Ca_i'], '-r')
+
+bcl = 200 #400
+p2 = myokit.Protocol()
+p2.schedule(1,0,1.0,bcl,0)
+s2 = myokit.Simulation(m,p2)
+s2.pre(100*bcl)
+d2 = s2.run(1000)
+
+pl.figure()
+#pl.plot(cc,dd, '-k', d2['Environment.time'], d2['cell.V'], '-r')
+pl.subplot(2,1,1)
+pl.plot(d2['Environment.time'], d2['cell.V'], '-r')
+
+pl.subplot(2,1,2)
+pl.plot(d2['Environment.time'], d2['Ca.Ca_i'], '-r')
+
+#pl.title(var)
+pl.show()
+
