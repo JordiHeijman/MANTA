@@ -1,4 +1,6 @@
-from __future__ import print_function, absolute_import, division
+from __future__ import absolute_import, division
+from __future__ import print_function, unicode_literals
+
 import sys
 import os
 sys.path.append('C:\\myokit\\myokit')
@@ -1752,10 +1754,10 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
 
     
 class MyokitProgressReporter(myokit.ProgressReporter):
-    target = None
-    msgvar = None
+
     def __init__(self, tar=None):
         self.target = tar
+        self.msgvar = None
         
     def enter(self, msg=None):        
         print("Starting sim...")
@@ -1772,11 +1774,12 @@ class MyokitProgressReporter(myokit.ProgressReporter):
         
         QtWidgets.QApplication.processEvents(QtCore.QEventLoop.ExcludeUserInputEvents)
         return True
-        
+
+
 def run():
     app = QtWidgets.QApplication(sys.argv)
     myWindow = MyWindowClass(None)
     myWindow.show()
     app.exec_()
 
-run()
+
