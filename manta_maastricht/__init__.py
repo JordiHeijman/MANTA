@@ -1,4 +1,4 @@
-from __future__ import print_function, division
+from __future__ import print_function, absolute_import, division
 import sys
 import os
 sys.path.append('C:\\myokit\\myokit')
@@ -20,7 +20,7 @@ data1_ref = 1
 data2_ref = 1
 settingValuesforAAD = 0
  
-import Qt5file
+from . import Qt5file
 
 class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
     def __init__(self, parent=None):
