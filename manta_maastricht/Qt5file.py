@@ -2004,8 +2004,8 @@ class Ui_MainWindow(object):
         self.label_10.setText(_translate("MainWindow", "MANTA is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."))
         self.tabWidgetModel2.setTabText(self.tabWidgetModel2.indexOf(self.tab_8), _translate("MainWindow", "Export"))
 
-import MatplotlibWidget5
-import Resource_rc5
+from . import MatplotlibWidget5
+from . import Resource_rc5
 
 if __name__ == "__main__":
     import sys
@@ -2015,4 +2015,5 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+
 
