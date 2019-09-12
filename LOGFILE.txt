@@ -4,4 +4,4 @@ Technical Update(s):
 
 Content Update(s):
 - The x-axis for both models can be extended up to 100,000 ms
-- An iPSC-CM model (Kernik-2019) has been added (several further validations are expected to come in the near future)
+- A human iPSC-CM model (Kernik-2019) has been added (several further validations are expected to come in the near future)
