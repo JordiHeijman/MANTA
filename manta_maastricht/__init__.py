@@ -3,7 +3,7 @@ from __future__ import print_function, unicode_literals
 
 import sys
 import os
-sys.path.append('C:\\myokit\\myokit')
+#sys.path.append('C:\\myokit\\myokit')
 import myokit
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
