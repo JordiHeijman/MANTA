@@ -22,7 +22,7 @@ setup(
     # Register as a shell script
     entry_points = {
         'console_scripts': [
-            'manta_maastricht-run=manta_maastricht.command_line:main',
+            'manta = manta_maastricht.__main__:main',
         ],
     },
 
