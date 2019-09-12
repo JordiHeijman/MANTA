@@ -9,7 +9,11 @@ To cite MANTA, please see the instructions [here](./CITATION).
 
 
 
-## Installation
+## User guide
+
+For a user guide, please see the [supporting material to our publication](https://doi.org/10.1016/j.phrs.2019.104444).
+
+## Quick installation
 
 To install MANTA, use
 
