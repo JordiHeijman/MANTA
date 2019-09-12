@@ -21,6 +21,14 @@ To install MANTA, use
 pip install pyqt5 manta_maastricht
 ```
 
+If you're using Python2, you might need to use
+
+```
+pip install manta_maastricht
+```
+
+and install PyQt5 some other way. On certain Python distributions (e.g. Anaconda) it might already be provided.
+
 ## For developers
 
 To install a developer version of manta:
