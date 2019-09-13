@@ -1681,9 +1681,10 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
     def savecsv1(self):
         global model1, data1, data1_ref, data1b
 
-        export_mdl1 = QtGui.QFileDialog.getSaveFileName(self, 'Save File', '', "CSV (*.csv);;Text (*.txt);;All Files (*.*)")
-        ext1 = export_mdl1[len(export_mdl1)-4:len(export_mdl1)]
-        export_mdl1_top = export_mdl1[:(len(export_mdl1)-4)]+"_Top"+ext1
+        export_mdl1 = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '', "CSV (*.csv);;Text (*.txt);;All Files (*.*)")
+        main1 = export_mdl1[0][:-4]
+        ext1 = export_mdl1[0][-4:]
+        export_mdl1_top = ''.join(main1)+("_Top")+''.join(ext1)
         
         with open(export_mdl1_top,'wb') as f1_top:
             for k, item in enumerate(data1):
@@ -1702,7 +1703,7 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                
                 #np.savetxt(f1_top, np.c_[data1_ref_temp[model1.time()], data1_ref_temp[self.cmbOutput1Top.currentText()], data1_temp[self.cmbOutput1Top.currentText()], data1b_temp[self.cmbOutput1Top.currentText()]], delimiter=',')
 
-        export_mdl1_bottom = export_mdl1[:(len(export_mdl1)-4)]+"_Bottom"+ext1
+        export_mdl1_bottom = ''.join(main1)+("_Bottom")+''.join(ext1)
        
         with open(export_mdl1_bottom,'wb') as f1_bottom:
             for k, item in enumerate(data1):
@@ -1723,9 +1724,10 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
     def savecsv2(self):
         global model2, data2, data2_ref, data2b
         
-        export_mdl2 = QtGui.QFileDialog.getSaveFileName(self, 'Save File', '', "CSV (*.csv);;Text (*.txt);;All Files (*.*)")
-        ext2 = export_mdl2[len(export_mdl2)-4:len(export_mdl2)]
-        export_mdl2_top = export_mdl2[:(len(export_mdl2)-4)]+"_Top"+ext2
+        export_mdl2 = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File', '', "CSV (*.csv);;Text (*.txt);;All Files (*.*)")
+        main2 = export_mdl2[0][:-4]        
+        ext2 = export_mdl2[0][-4:]
+        export_mdl2_top = ''.join(main2)+("_Top")+''.join(ext2)
 
         with open(export_mdl2_top,'wb') as f2_top:
             for k, item in enumerate(data2):
@@ -1744,7 +1746,7 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
 
                 #np.savetxt(f2_top, np.c_[data2_ref_temp[model2.time()], data2_ref_temp[self.cmbOutput2Top.currentText()], data2_temp[self.cmbOutput2Top.currentText()], data2b_temp[self.cmbOutput2Top.currentText()]], delimiter=',')
 
-        export_mdl2_bottom = export_mdl2[:(len(export_mdl2)-4)]+"_Bottom"+ext2
+        export_mdl2_bottom = ''.join(main2)+("_Bottom")+''.join(ext2)
       
         with open(export_mdl2_bottom,'wb') as f2_bottom:
             for k, item in enumerate(data2):

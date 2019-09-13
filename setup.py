@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 setup(
     # Module name (lowercase)
     name='manta_maastricht',
-    version='1.2',
+    version='1.1.4',
     description='manta_maastricht',
     url='http://www.jordiheijman.net/',
 

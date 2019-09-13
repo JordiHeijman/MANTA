@@ -1,0 +1,1144 @@
+[[model]]
+name: Kernik2019 - Su Min Pack (Maastricht University)
+desc: """
+    Myokit implementation of Kernik 2019
+
+    Based on the matlab code found at https://github.com/ClancyLabUCD/IPSC-model
+
+    References
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    [1] Kernik DC, Morotti S, Wu H, Garg P, Duff HJ, Kurokawa J, Jalife J, 
+    Wu JC, Grandi E, Clancy CE. A computational model of induced pluripotent
+    stem cell derived cardiomyocytes incorporating experimental variability from
+    multiple data sources. 
+    The Journal of physiology. 2019 Jul 6.
+
+    Original copyright notice:
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    Copyright (C) 2019 Kernik et al.
+    """
+author: Su Min Pack
+# Initial values
+membrane.V      = -75.5966016388547
+calcium.uCa_i   = 0.000219191642424964
+calcium.uCa_sr  = 0.335086796732326
+sodium.Nai      =7.16928091250999
+potassium.K_i   = 104.748824394112
+irel.R=0.0113120363433751
+irel.O=0.000165045105312396
+irel.I=0.0142153622323012
+ina.H           = 0.739543607812429
+ina.M           = 0.0297549962926414
+ina.J           = 0.124515982574505
+inal.a          = 0.001022252813581797
+inal.i          = 0.3593255076983574
+ito.S           = 0.746802810614006
+ito.R=0.000267597833344161
+ikr.a           = 0.450577185148519
+ikr.i            = 0.309767485715433
+ical.D          = 0.000394925342652924
+ical.F1=0.170990105585540
+ical.fCa       = 0.877798946134089
+iks.Xs          = 0.153788281650949
+icaT.dCaT=0.000270195573471577
+icaT.fCaT=0.756032904368393
+If.Xf=0.00640338504912616
+        
+I_Na_Markov.IC3 = 0
+I_Na_Markov.IC2 = 0
+I_Na_Markov.IF = 0
+I_Na_Markov.C3 = 1.00
+I_Na_Markov.C2 = 0
+I_Na_Markov.C1 = 0
+I_Na_Markov.O = 0
+I_Na_Markov.IS = 0
+I_Na_Markov.DpIC3 = 0
+I_Na_Markov.DpIC2 = 0
+I_Na_Markov.DpIF = 0
+I_Na_Markov.DpC3 = 0
+I_Na_Markov.DpC2 = 0
+I_Na_Markov.DpC1 = 0
+I_Na_Markov.DpO = 0
+I_Na_Markov.DpIS = 0
+I_Na_Markov.DpIT = 0
+I_Na_Markov.DIC3 = 0
+I_Na_Markov.DIC2 = 0
+I_Na_Markov.DIF = 0
+I_Na_Markov.DC3 = 0
+I_Na_Markov.DC2 = 0
+I_Na_Markov.DC1 = 0
+I_Na_Markov.DO = 0
+I_Na_Markov.DIS = 0
+I_Na_Markov.DIT = 0
+
+[parameters]
+ICaL_Block = 0.0
+IK1_Block = 0.0
+IKr_Block = 0.0
+IKs_Block = 0.0
+IKur_Block = 0.0
+INa_Block = 0.0
+INaL_Block = 0.0
+INaK_Block = 0.0
+INCX_Block = 0.0
+Ito_Block = 0.0
+
+Ca_o = 1.8 [mmol/L] : Extracellular Ca2+ concentration
+K_o = 5.4 [mmol/L] : Extracellular K+ concentration
+Na_o = 140 [mmol/L] : Extracellular Na+ concentration
+
+[output]
+Vm = membrane.V
+Cai = 1000*calcium.uCa_i
+#dVdt = dot(membrane.V)
+
+#
+# Simulation engine variables
+#
+[engine]
+time = 0 bind time
+pace = 0 bind pace
+
+#
+# Total membrane currents and potential
+#
+[membrane]
+markov_Na = 0
+C = 1 [uF/cm^2]
+dot(V) = -1/C * (i_ion + i_stim + i_diff)
+    in [mV]
+    label membrane_potential
+    desc: The membrane potential
+stim_amplitude = -80 [uA/uF]
+i_stim = engine.pace * stim_amplitude
+    desc: The stimulus current
+    in [uA/uF]
+i_diff = 0 bind diffusion_current
+    desc: The diffusion current from cell to cell
+    in [uA/uF]
+#i_ion = ik1.IK1+ito.ITo+ikr.IKr+iks.IKs+ical.ICaL+icaT.i_CaT+inak.INaK+ina.INa+inaca.INaCa+ipca.IpCa+If.i_f+inab.INaB+icab.ICab
+i_ion = ik1.IK1+ito.ITo+ikr.IKr+iks.IKs+ical.ICaL+icaT.i_CaT+inak.INaK+(if(membrane.markov_Na == 1, I_Na_Markov.I_Na_tot, ina.INa))+inaca.INaCa+ipca.IpCa+If.i_f+inab.INaB+icab.ICab
+    desc: The remaining transmembrane currents
+    in [uA/uF]
+
+#
+# Physical constants
+#
+[phys]
+F = 96.487 [C/mol] : Faraday's constant
+R = 8.314 [mJ/mol/K] : Gas constant
+T = 310 [K] : Temperature
+FRT = F/R/T
+RTF = R*T/F
+
+#
+# Common terms
+#
+[common]
+vf = membrane.V * phys.FRT
+vff = vf * phys.F
+evf = exp(vf)
+
+#
+# Cell geometry
+#
+[cell]
+
+Cm=60
+ #pF
+V_tot=3960
+ #um^3
+Vc_tenT=16404
+VSR_tenT=1094
+V_tot_tenT=Vc_tenT+VSR_tenT
+ #V_total data from Hwang et al., V_c and V_SR  proportionally scaled from Ten Tusscher 2004 values
+v_cyt=V_tot*(Vc_tenT/V_tot_tenT)
+#=3712.4 um^3 (93.7% total volume)
+v_sr=V_tot*(VSR_tenT/V_tot_tenT)
+#=247.6 um^3 (6.3% total volume)
+
+    desc: """
+    L-type Ca2+ current Subspace (SS,CaL) volume
+
+    The area between the SR subspace and the ICaL channel has a slightly
+    different Ca2+ concentration than the rest of the cell.
+    """
+
+#
+# Extracellular concentrations
+#
+[extra]
+Ko  = parameters.K_o #5.4 [mM] : Extracellular potassium concentration   # Same as LR1
+Cao = parameters.Ca_o #1.8 [mM] : Extracellular calcium concentration     # Same as LR1
+Nao = parameters.Na_o #140 [mM] : Extracellular sodium concentration      # Same as LR1
+
+#
+# Reversal potentials
+#
+[nernst]
+EK = phys.RTF * log(extra.Ko / potassium.K_i)
+    desc: Nernst potential for Potassium currents
+    in [mV]
+
+ENa = phys.RTF * log(extra.Nao / sodium.Nai)
+    desc: Reversal potential for Sodium currents
+    in [mV]
+
+ECa = 0.5*phys.R*phys.T/phys.F*log(extra.Cao/calcium.uCa_i)
+
+#
+# Calcium in subspaces
+# Described in sections P and Q
+#
+[calcium]
+## 2: CaSR (millimolar)
+#rapid equilibrium approximation equations -- not as formulated in ten Tusscher 2004 text
+Buf_SR = 10.0*1.2
+#millimolar (in calcium_dynamics)
+Kbuf_SR = 0.3
+#millimolar (in calcium_dynamics)
+Ca_SR_bufSR = 1/(1.0+Buf_SR*Kbuf_SR/(uCa_sr+Kbuf_SR)^2.0)
+
+dot(uCa_sr) = Ca_SR_bufSR*cell.v_cyt/cell.v_sr*(iup.i_up-(irel.Irel+ileak.i_leak))
+
+#-------------------------------------------------------------------------------
+## 3: Cai (millimolar)
+#rapid equilibrium approximation equations -- not as formulated in ten Tusscher 2004 text
+Buf_C =.06
+# millimolar (in calcium_dynamics)
+Kbuf_C = .0006
+# millimolar (in calcium_dynamics)
+Cai_bufc = 1/(1.0+Buf_C*Kbuf_C/(uCa_i+Kbuf_C)^2.0)
+
+dot(uCa_i) = (Cai_bufc)*(ileak.i_leak-iup.i_up+irel.Irel-(ical.ICaL+icaT.i_CaT+icab.ICab+ipca.IpCa-2*inaca.INaCa)*cell.Cm/(2.0*cell.v_cyt*phys.F))
+
+
+
+#
+# Sodium concentrations
+# Described in section Q
+#
+[sodium]
+## 4: Nai (millimolar) (in sodium_dynamics)
+#dot(Nai) = -cell.Cm*(ina.INa+inab.INaB+If.i_fNa+3.0*inak.INaK+3.0*inaca.INaCa +ical.i_CaL_Na)/(phys.F*cell.v_cyt)
+dot(Nai) = -cell.Cm*((if(membrane.markov_Na == 1, I_Na_Markov.I_Na_tot, ina.INa))+inab.INaB+If.i_fNa+3.0*inak.INaK+3.0*inaca.INaCa +ical.i_CaL_Na)/(phys.F*cell.v_cyt)
+
+#
+# Potassium concentrations
+# Described in section Q
+#
+[potassium]
+## 5: Ki (millimolar) (in potatssium_dynamics)
+dot(K_i) = -cell.Cm*(ik1.IK1+ito.ITo+ikr.IKr+iks.IKs+If.i_fK -2.*inak.INaK + ical.i_CaL_K )/(phys.F*cell.v_cyt)
+
+
+#
+# ICaL
+# Described in section A of the supplement to [1]
+#
+[ical]
+use membrane.V
+use common.vf, common.vff
+use calcium.uCa_i as Cai
+use phys.F as F
+use phys.R as R
+use phys.T as T
+use extra.Ko as Ko
+
+## L-type Ca2+ current (ICaL):
+#define parameters from x_cal
+d1=12.96629419
+d2=7.079145965
+d5=0.044909416
+d6=-6.909880369
+
+f1=0.00051259
+f2=-49.50571203
+f5=1931.211224
+f6=5.7300275
+taud_const=1.658246947
+tauf_const=100.4625592
+
+#parameter-dependent values:
+d3=d5*d1
+d4=1/((1/d2)+(1/d6))
+f3=f5*f1
+f4=1/((1/f2)+(1/f6))
+
+# 7: d (dimensionless) (activation in i_CaL)
+alpha_d=d1*exp(V/d2)
+beta_d=d3*exp(V/d4)
+d_inf=alpha_d/(alpha_d+ beta_d)
+tau_d=((1/(alpha_d+ beta_d))+taud_const)
+dot(D)= (d_inf-D)/tau_d
+
+# 8: f (dimensionless) (inactivation  i_CaL)
+alpha_f=f1*exp(V/f2)
+beta_f=f3*exp(V/f4)
+f_inf=alpha_f/(alpha_f+beta_f)
+tau_f=((1/(alpha_f+beta_f)) + tauf_const)
+dot(F1)=(f_inf-F1)/tau_f
+
+# 9: fCa (dimensionless) (calcium-dependent inactivation in i_CaL)
+# from Ten tusscher 2004
+scale_Ical_Fca_Cadep=1.2
+alpha_fCa = 1.0/(1.0+((scale_Ical_Fca_Cadep*Cai)/0.000325)^8.0)
+beta_fCa = 0.1/(1.0+exp((scale_Ical_Fca_Cadep*Cai-0.0005)/0.0001))
+gamma_fCa = 0.2/(1.0+exp((scale_Ical_Fca_Cadep*Cai-0.00075)/0.0008))
+
+fCa_inf =  ((alpha_fCa+beta_fCa+gamma_fCa+0.23)/(1.46))
+tau_fCa=2 
+#ms 
+k_fca=if(fCa_inf>fCa,if(V>-60,0,1),1)
+dot(fCa) = k_fca*(fCa_inf-fCa)/tau_fCa
+
+#Current:
+p_CaL =  0.308027691 
+# nS_per_pF (in i_CaL)
+p_CaL_shannonCa=5.4e-4
+p_CaL_shannonNa=1.5e-8
+p_CaL_shannonK=2.7e-7
+p_CaL_shannonTot=p_CaL_shannonCa + p_CaL_shannonNa + p_CaL_shannonK
+p_CaL_shannonCap=p_CaL_shannonCa/p_CaL_shannonTot
+p_CaL_shannonNap=p_CaL_shannonNa/p_CaL_shannonTot
+p_CaL_shannonKp=p_CaL_shannonK/p_CaL_shannonTot
+
+p_CaL_Ca=p_CaL_shannonCap*p_CaL
+p_CaL_Na=p_CaL_shannonNap*p_CaL
+p_CaL_K=p_CaL_shannonKp*p_CaL
+
+ibarca= p_CaL_Ca*4.0*V*F^2.0/(R*T)* (.341*Cai*exp(2.0*V*F/(R*T))-0.341*extra.Cao)/(exp(2.0*V*F/(R*T))-1.0)
+i_CaL_Ca =  ibarca *D*F1*fCa
+
+ibarna= p_CaL_Na*V*F^2.0/(R*T)* (.75*sodium.Nai*exp(V*F/(R*T))-0.75*extra.Nao)/(exp(V*F/(R*T))-1.0)
+i_CaL_Na=  ibarna *D*F1*fCa
+
+ibark= p_CaL_K*V*F^2.0/(R*T)* (.75*potassium.K_i*exp(V*F/(R*T))-0.75*Ko)/(exp(V*F/(R*T))-1.0)
+i_CaL_K = ibark *D*F1*fCa
+
+ICaL= (1.0 - parameters.ICaL_Block) * (i_CaL_Ca+i_CaL_Na+i_CaL_K)
+
+
+
+
+#
+# Markov model of IKs
+# Described in section B
+#
+
+[icaT]
+use membrane.V as V
+use nernst.ECa as E_Ca
+
+## T-type Calcium Current (ICaT):
+#SAN T-TYPE CA2+ model (Demir et al., Maltsev-Lakatta ), G_CaT determined by fit to Kurokawa IV:
+
+#19: dCaT (activation in i_CaT)
+dcat_inf= 1/(1+exp(-(V +26.3)/6))
+
+tau_dcat=1/(1.068*exp((V+26.3)/30)+ 1.068*exp(-(V+26.3)/30))
+dot(dCaT) = (dcat_inf-dCaT)/tau_dcat
+
+# 20: fCaT (inactivation in i_CaT)
+fcat_inf= 1/(1+exp((V +61.7)/5.6))
+tau_fcat=1/(.0153*exp(-(V+61.7)/83.3)+ 0.015*exp((V+61.7)/15.38))
+dot(fCaT) = (fcat_inf-fCaT)/tau_fcat
+
+g_CaT=0.185
+# nS_per_pF (in i_CaT)
+i_CaT= g_CaT*(V-E_Ca)*dCaT*fCaT
+
+
+[iks]
+use membrane.V
+use calcium.uCa_i
+use common.vf
+
+#define parameters from x_IKS:
+ks1=0.001166 
+ks2=66726.83868
+ks5=0.280458908
+ks6=-18.86697157
+tauks_const=4.74E-06
+
+#parameter-dependent values:
+ks3=ks5*ks1
+ks4=1/((1/ks2)+(1/ks6))
+
+# 12: Xs (dimensionless) (activation in i_Ks)
+alpha_Xs=ks1*exp(V/ks2)
+beta_Xs=ks3*exp(V/ks4)
+Xs_inf=alpha_Xs/(alpha_Xs+beta_Xs)
+tau_Xs=(1/(alpha_Xs+beta_Xs))+ tauks_const
+dot(Xs)=(Xs_inf-Xs)/tau_Xs
+
+IKs = (1.0 - parameters.IKs_Block) * GKs * (Xs^2) * (V - nernst.EK)
+    in [uA/uF]
+GKs  = 0.0077
+    desc: IKs maximal conductance
+
+#
+# INa
+# Described in section G of the supplement to [1]
+#
+# Identical to the original Luo-Rudy (Guinea pig) formulation.
+#
+
+[ina]
+use membrane.V as V
+use nernst.ENa as E_Na
+#define parameters from x_Na
+m1=108.0458464
+m2=13.10701573
+m5=0.002326914
+m6= -7.91772629
+
+h1=0.003626599
+h2=-19.83935886
+h5=9663.294977
+h6=7.395503565
+
+j1=0.000512257
+j2=-66.5837555
+
+tau_m_const=0.03197758
+tau_h_const=0.167331503
+tau_j_const=0.951088725
+
+#parameter-dependent values:
+m3=m5*m1
+m4=1/((1/m2)+(1/m6))
+h3=h5*h1
+h4=1/((1/h2)+(1/h6))
+j5=h5
+j6=h6
+j3=j5*j1
+j4=1/((1/j2)+(1/j6))
+
+#13: h (dimensionless) (inactivation in i_Na)
+alpha_h=h1*exp(V/h2)
+beta_h=h3*exp(V/h4)
+h_inf=(alpha_h/(alpha_h+beta_h))
+tau_h=((1/(alpha_h+beta_h))+tau_h_const)
+dot(H)=(h_inf-H)/tau_h
+
+# 14: j (dimensionless) (slow inactivation in i_Na)
+alpha_j=j1*exp(V/j2)
+beta_j=j3*exp(V/j4)
+j_inf=(alpha_j/(alpha_j+beta_j))
+tau_j=((1/(alpha_j+beta_j))+tau_j_const)
+dot(J)=(j_inf-J)/tau_j
+
+# 15: m (dimensionless) (activation in i_Na)
+alpha_m=m1*exp(V/m2)
+beta_m=m3*exp(V/m4)
+m_inf=alpha_m/(alpha_m+beta_m)
+tau_m=((1/(alpha_m+beta_m))+tau_m_const)
+dot(M) =(m_inf-M)/tau_m
+
+#Current:
+g_Na=9.720613409
+# nS_per_pF (in i_Na)
+INa = (1.0 - parameters.INa_Block) * (g_Na*M^3.0*H*J*(V-E_Na))
+
+########################################################
+[I_Na_Markov]
+# this state dependence of Na channel was from Moreno et al 2011 (Sci. Transl. Med)
+# contains free, charged, neutral drug
+
+class1_drug_cat = 3
+Lidocaine_fact = if(class1_drug_cat==2 and new_drug_mode==0, 1, 0) ## example for Ib
+Flecainide_fact = if(class1_drug_cat==3 and new_drug_mode==0, 1, 0) ## example for Ic
+Vernakalant_fact = if(class1_drug_cat==4 and new_drug_mode==0, 1, 0) 
+
+x1 = 0.33895924364090035
+x2 = 0.69136195942957679
+x3 = 1.4310575051533165
+x4 = 0.65294099974057818
+x5 = 2.240616847042463
+x6 = 2.7473947858770513
+x7 = 3.8717514280429359
+x8 = 0.77360525533046953
+x9 = 0.48988864341477356
+x10 = 0.16587684783843748
+x11 = 0.79166905392591369
+x12 = 0.97426986866050913
+x13 = 1.5371091566498705
+x14 = 1.0328344
+x15 = 0.99481919
+x16 = 1.00254845
+x17 = 1.01096423
+x18 = 1.27052465
+x19 = 1.24650782516868182
+x20 = 0.40525158265996508
+x21 = 0.9911675441375104
+x22 = 1.1141648721471809
+x23 = 0.7400221830311837
+x24 = 0.6867087130674105
+x25 = 0.9613389122782059
+
+f1 = 0.99894802383223924 #15802.517082265076
+f2 = 1.011763238332033 #11212.49445307003
+f3 = 1.0601752630895926 #1.0835911457972944
+f4 = 1.0304361379208964 #4.7213138217409707
+f5 = 1.0488020784823679 #1.1886854610200599
+f6 = 1.006194635479259 #1.1293915676022106
+f7 = 1.0196751172280454 #0.98647121091698153
+f8 = 11.380184354561393 #0.54542349779755606
+f9 = 1.0258563336302067 #1.020713680006784
+f10 = 0.75435783615544616 #2.6609951303941308
+f11 = 1.0108975941170679 #1.1411905523331658
+f12 = 0.97128471748753387 #5.3540204782968566
+f13 = 1.0075653020362194 #1.028853996176295
+f14 = 1.0148100245843019 #1.0033797797467918
+
+l1 = 1.36922845112808845e+04
+l2 = 1.36922845112808845e+04
+l3 = 9.75801811222358206e-01
+l4 = 4.78855031291120348e+00
+l5 = 9.75801811222358206e-01
+l6 = 9.78288593348167645e-01
+l7 = 9.78288593348167645e-01
+l8 = 9.05788719283946997e-01
+l9 = 9.05788719283946997e-01
+l10 = 4.84105307990853273e+00
+
+v1 = 1643.4118672121467 #7170.4622644564224
+v2 = 500#1203.7661761097061 #15352.068978379524
+v3 = 0.29032680374507414 #0.78329295519833497
+v4 = 1.145809054293967 #6.2271179964787571
+v5 = 19.394482038525979 #22.10184390723893
+v6 = 0.44798732782313322 #1.5107146709941404
+v7 = 0.29031744983038188 #1.0935642293370962
+v8 = 1.2169186721862526 #0.65910138578597266
+v9 = 1.3533338540760118 #2.3700350948377
+v10 = 0.92848089050303395 #6.2071593539114822
+v11 = 0
+v12 = 0
+v13 = 0
+v14 = 0
+
+#### new drug components ####
+new_drug_mode = 0
+n_diffusion = 0
+n_kd_open = 0
+n_k_off = 0
+n_ki_off = 0
+n_kc_off = 0
+n_p22 = 0
+n_p23 = 0
+n_p24 = 0
+n_p25 = 0
+n_p26 = 0
+n_p27 = 0
+n_p28 = 0
+n_p29 = 0
+n_p30 = 0
+n_p31 = 0
+n_p32 = 0
+n_p33 = 0
+n_p34 = 0
+n_p35 = 0
+
+diffusion = ((new_drug_mode*n_diffusion) + (Flecainide_fact*5500) + (Lidocaine_fact*500) + (Vernakalant_fact*500*6.4629447592936096)) #in [1 / M ms]
+kd_open = ((new_drug_mode*n_kd_open) + (Flecainide_fact*11.2e-6) + (Lidocaine_fact*318e-6) + (Vernakalant_fact*318e-6*0.34682644956847741)) * exp(-0.7 * membrane.V * phys.FRT)
+conc = 0
+pH = 7.4
+pKa_newdrug = 7.4
+pKa_Lidocaine = 7.6
+pKa_Flecainide = 9.3
+pKa_Vernakalant = 5.4
+#pH = (if(Lidocaine_fact==1, pH_Lidocaine, 0)) + (if(Flecainide_fact==1, pH_Flecainide, 0)) + (if(new_drug_mode==1, pH_newdrug, 0))
+pKa = (if(Vernakalant_fact==1, pKa_Vernakalant, 0)) + (if(Lidocaine_fact==1, pKa_Lidocaine, 0)) + (if(Flecainide_fact==1, pKa_Flecainide, 0)) + (if(new_drug_mode==1, pKa_newdrug, 0))
+portion = 1/(1+10^(pH-pKa))
+conc_dplus = portion * conc
+conc_d = (1-portion) * conc
+
+kon = conc_dplus * diffusion #if(conc_dplus>0.0001, conc_dplus * diffusion, 1e-8) #### for protonated drugs
+kcon = kon
+koff = kd_open * diffusion
+kcoff = koff
+
+k_on = conc_d * diffusion #if(conc_d>0.0001, , 1e-8) #### for neutral drugs
+k_off = ((new_drug_mode*n_k_off) + (Flecainide_fact*400e-6) + (Lidocaine_fact*400e-6) + (Vernakalant_fact*400e-6*0.51684933468012062)) * diffusion
+ki_on = k_on / 2
+ki_off = ((new_drug_mode*n_ki_off) + (Flecainide_fact*5.4e-6) + (Lidocaine_fact*3.4e-6) + (Vernakalant_fact*3.4e-6*0.62400593362193568)) * diffusion
+kc_on = k_on / 2
+kc_off = ((new_drug_mode*n_kc_off) + (Flecainide_fact*800e-6) + (Lidocaine_fact*900e-6) + (Vernakalant_fact*900e-6*0.045971749343871632)) * diffusion
+
+Tfactor = 1 / (3 ^ ((37 - (phys.T - 273)) / 10.0)) #0.19245
+
+# Transition rates (ms-1)  
+a11 = Tfactor * p1 / (p2 * exp(-(membrane.V - actshift) / p3) + p6 * exp(-(membrane.V - actshift) / p7))
+a12 = Tfactor * p1 / (p2 * exp(-(membrane.V - actshift) / p4) + p6 * exp(-(membrane.V - actshift) / p7))
+a13 = Tfactor * p1 / (p2 * exp(-(membrane.V - actshift) / p5) + p6 * exp(-(membrane.V - actshift) / p7))
+b11 = Tfactor * p8 * exp(-(membrane.V - actshift) / p9)
+b12 = Tfactor * p10 * exp(-(membrane.V - actshift - p11) / p9)
+b13 = Tfactor * p12 * exp(-(membrane.V - actshift - p13) / p9)
+#a3 = p14 * exp(-membrane.V / p15)
+#b3 = p16 * exp(membrane.V / p17)
+#aa = a3 / (a3 + b3)
+#tau = 1 / (a3 + b3)
+a3_ss = 1/(1+exp((membrane.V - p14_new) / p15_new))
+a3_tau = h1 + p01 * exp(p16_new * (membrane.V - p14_new)) / (1 + exp(p17_new * (membrane.V - p14_new)))
+a3 = Tfactor * a3_ss / a3_tau
+b3 = Tfactor * (1 - a3_ss) / a3_tau
+a2 = Tfactor * p18 * exp(membrane.V / p19)
+b2 = (a13*a2*a3) / (b13*b3)
+ax = p20 * a2
+bx = p21 * a3
+
+a13c = p22 * a13
+b13c = if(kon>0, (b13 * kcon * koff * a13c) / (kon * kcoff * a13), 0)
+a13n = p23 * a13
+b13n = if(k_on>0, (b13 * kc_on * a13n * k_off) / (kc_off * a13 * k_on), 0)
+ax1 = p24 * ax
+bx1 = p25 * bx
+ax2 = p26 * ax
+bx2 = if(ki_on>0, (bx * k_on * ax2 * ki_off) / (ax * ki_on * k_off), 0)
+a22 = p27 * a2
+a_22 = p28 * a2
+b22 = if(b13c>0, (a13c * a22 * a33) / (b13c * b33), 0)
+b_22 = if(b13n>0, (a_33 * a13n * a_22) / (b_33 * b13n), 0)
+b33 = p29 * b3
+b_33 = p30 * b3
+a33 = p31 * a3
+a_33 = if(ki_on>0, (ki_off * a3 * kc_on * b_33) / (ki_on * kc_off * b3), 0)
+## DIT or DpIT ONLY in Lidocaine (Inactivated, Trapped state)
+a44 = p32 * a2
+b44 = p33 * a3
+a_44 = p34 * a2
+b_44 = p35 * a2
+
+actshift = -15*x19
+h1 = 2*x20
+p1 = 8.5539*x1
+p2 = 7.4392e-2*x2
+p3 = 17.0*x3
+p4 = 15.0*x4
+p5 = 12.0*x5
+p6 = 2.0373e-1*x6
+p7 = 150*x7
+p8 = 7.5215e-2*x8
+p9 = 20.3*x9
+p10 = 2.7574*x10
+p11 = 5*x11
+p12 = 4.7755e-1*x12
+p13 = 10*x13
+p14 = 5.1458e-6 #5.1458e-6 *1.0325463712122342
+p15 = 8.2471 #0.8*8.2471 * 0.10401603829601243
+p16 = 6.1205 #6.1205 * 0.96668483687506801
+p17 = 12.542 #0.8*12.542 * 1.0908872227689068
+p18 = 13.370*x14
+p19 = 43.749*x15
+p20 = 3.4229e-2*x16
+p21 = 1.7898e-2*x17
+p14_new = -70*x21
+p15_new = 3.5*x22
+p16_new = 0.052 * 2.9*x23
+p17_new = 0.132 * 1.9*x24
+p01 = 41*x25
+
+p22 = (new_drug_mode*n_p22) + (Flecainide_fact*3.6324e-3*f1) + (Lidocaine_fact*5.6974e-03*l1) + (Vernakalant_fact*5.6974e-03*v1) #3.6324e-3
+p23 = (new_drug_mode*n_p23) + (Flecainide_fact*2.6452*f2) + (Lidocaine_fact*8.4559e+01*l2) + (Vernakalant_fact*8.4559e+01*v2) #2.6452
+p24 = (new_drug_mode*n_p24) + (Flecainide_fact*5.7831e-5*f3) + (Lidocaine_fact*6.3992e-07*l3) + (Vernakalant_fact*6.3992e-07*v3) #5.7831e-5
+p25 = (new_drug_mode*n_p25) + (Flecainide_fact*1.6689e-8*f4) + (Lidocaine_fact*1.3511e+00*l4) + (Vernakalant_fact*1.3511e+00*v4) #1.6689e-8
+p26 = (new_drug_mode*n_p26) + (Flecainide_fact*2.6126e-01*f5) + (Lidocaine_fact*1.3110e-01*l5) + (Vernakalant_fact*1.3110e-01*v5) #2.6126e-01
+p27 = (new_drug_mode*n_p27) + (Flecainide_fact*1.4847e3*f6) + (Lidocaine_fact*6.7067e-06*l6) + (Vernakalant_fact*6.7067e-06*v6) #1.4847e3
+p28 = (new_drug_mode*n_p28) + (Flecainide_fact*4.2385e+01*f7) + (Lidocaine_fact*1.7084e-05*l7) + (Vernakalant_fact*1.7084e-05*v7) #4.2385e+01
+p29 = (new_drug_mode*n_p29) + (Flecainide_fact*1.7352e-6*f8) + (Lidocaine_fact*1.9698e-05*l8) + (Vernakalant_fact*1.9698e-05*v8) #1.7352e-6
+p30 = (new_drug_mode*n_p30) + (Flecainide_fact*2.1181e+00*f9) + (Lidocaine_fact*4.8477*l9) + (Vernakalant_fact*4.8477*v9) #2.1181e+00
+p31 = (new_drug_mode*n_p31) + (Flecainide_fact*6.7505e-05*f10) + (Lidocaine_fact*3.2976*l10) + (Vernakalant_fact*3.2976*v10) #6.7505e-05
+p32 = (new_drug_mode*n_p32) + (Flecainide_fact*2.4135*f11) + (Lidocaine_fact*0) + (Vernakalant_fact*2.4135*v11)
+p33 = (new_drug_mode*n_p33) + (Flecainide_fact*4.9001e-2*f12) + (Lidocaine_fact*0) + (Vernakalant_fact*4.9001e-2*v12) 
+p34 = (new_drug_mode*n_p34) + (Flecainide_fact*1.0326e-03*f13) + (Lidocaine_fact*0) + (Vernakalant_fact*1.0326e-03*v13) 
+p35 = (new_drug_mode*n_p35) + (Flecainide_fact*2.1378e-02*f14) + (Lidocaine_fact*0) + (Vernakalant_fact*2.1378e-02*v14)
+
+dot(IC3) = -IC3 * (a11 + a3 + ki_on) + IC2 * b11 + C3 * b3 + ki_off * DIC3
+dot(IC2) = -IC2 * (b11 + a3 + a12 + ki_on) + IC3 * a11 + IF * b12 + C2 * b3 + ki_off * DIC2
+dot(IF) = -IF * (b12 + a3 + b2 + ki_on) + IC2 * a12 + C1 * b3 + O * a2 + ki_off * DIF
+dot(C3) = -C3 * (b3 + a11 + kcon + kc_on) + IC3 * a3 + C2 * b11 + DpC3 * kcoff + DC3 * kc_off
+dot(C2) = -C2 * (b11 + b3 + a12 + kcon + kc_on) + C3 * a11 + IC2 * a3 + C1 * b12 + DpC2 * kcoff + DC2 * kc_off
+dot(C1) = -C1 * (b12 + b3 + a13 + kcon + kc_on) + C2 * a12 + IF * a3 + O * b13 + DpC1 * kcoff + DC1 * kc_off
+dot(O) = -O * (b13 + a2 + ax + kon + k_on) + C1 * a13 + IF * b2 + IS * bx + DpO * koff + DO * k_off
+dot(IS) = -IS * (bx + ki_on) + O * ax + DIS * ki_off
+
+dot(DpIC3) = -DpIC3 * (a33 + a11) + DpIC2 * b11 + DpC3 * b33
+dot(DpIC2) = -DpIC2 * (b11 + a33 + a12) + DpIC3 * a11 + DpIF * b12 + DpC2 * b33
+dot(DpIF) = -DpIF * (b12 + a33 + b22 + a44) + DpIC2 * a12 + DpC1 * b33 + DpO * a22 + DpIT * b44
+dot(DpC3) = -DpC3 * (b33 + a11 + kcoff) + DpIC3 * a33 + DpC2 * b11 + C3 * kcon
+dot(DpC2) = -DpC2 * (b11 + b33 + a12 + kcoff) + DpC3 * a11 + DpIC2 * a33 + DpC1 * b12 + C2 * kcon
+dot(DpC1) = -DpC1 * (b12 + b33 + a13c + kcoff) + DpC2 * a12 + DpIF * a33 + DpO * b13c + C1 * kcon
+dot(DpO) = -DpO * (b13c + a22 + ax1 + koff) + DpC1 * a13c + DpIF * b22 + DpIS * bx1 + O * kon
+dot(DpIS) = -DpIS * (bx1) + DpO * ax1
+dot(DpIT) = -DpIT * b44 + DpIF * a44
+
+dot(DIC3) = -DIC3 * (a_33 + a11 + ki_off) + DIC2 * b11 + DC3 * b_33 + ki_on * IC3
+dot(DIC2) = -DIC2 * (b11 + a_33 + a12 + ki_off) + DIC3 * a11 + DIF * b12 + DC2 * b_33 + ki_on * IC2
+dot(DIF) = -DIF * (b12 + a_33 + b_22 + a_44 + ki_off) + DIC2 * a12 + DC1 * b_33 + DO * a_22 + DIT * b_44 + ki_on * IF
+dot(DC3) = -DC3 * (b_33 + a11 + kc_off) + DIC3 * a_33 + DC2 * b11 + C3 * kc_on
+dot(DC2) = -DC2 * (b11 + b_33 + a12 + kc_off) + DC3 * a11 + DIC2 * a_33 + DC1 * b12 + C2 * kc_on
+dot(DC1) = -DC1 * (b12 + b_33 + a13n + kc_off) + DC2 * a12 + DIF * a_33 + DO * b13n + C1 * kc_on
+dot(DO) = -DO * (b13n + a_22 + ax2 + k_off) + DC1 * a13n + DIF * b_22 + DIS * bx2 + O * k_on
+dot(DIS) = -DIS * (bx2 + ki_off) + DO * ax2 + IS * ki_on
+dot(DIT) = -DIT * b_44 + DIF * a_44
+
+#E_Na = (phys.RTF) * log(138/10)
+g_Na = x18*7.8 *1.0 *4.5 #7.8 * 1.0 * 4.7#18 #13#4.5##*7.1#*91.5
+    in [1/ms]
+I_Na_tot = (1 - parameters.INa_Block) * g_Na * O * (membrane.V - nernst.ENa)
+    in [pA]
+
+########################################################
+[inal]
+use membrane.V as V
+Gbar = .0065
+INaL = (1.0 - parameters.INaL_Block) * Gbar * a^3 * i * (V - nernst.ENa)
+    desc: Late sodium current
+    in [uA/uF]
+dot(a) =  alpha * (1 - a) - beta * a
+    alpha = if(dd == 0, 3.2, 0.32 * vv / dd)
+        vv = V + 47.13
+        dd = 1 - exp(-0.1 * vv)
+    beta  = 0.08 * exp(-V / 11)
+dot(i) =  (hLss - i) / 600
+    hLss = 1 / (1 + exp((V + 91) / 6.1))
+
+#
+# Background sodium current
+# Described in section H
+#
+[inab]
+use membrane.V as V
+use nernst.ENa as E_Na
+##Background Sodium (INaB):
+# Ten Tusscher formulation
+GNaB = 0.00029*1.5   
+# nS_per_pF (in i_b_Na)
+INaB = GNaB*(V-E_Na)
+
+
+#
+# Sodium potassium exchanger
+# A recently developed I(NaK) formulation based on data from canine left
+#  ventricular epicardial myocytes.
+# Described in section C
+#
+
+[inak]
+use membrane.V as V
+use extra.Ko as Ko
+use sodium.Nai as Nai
+use phys.F as F
+use phys.R as R
+use phys.T as T
+##Na+/K+ pump current (INaK):
+#Ten Tusscher formulation
+Km_K = 1.0
+# Ko half-saturation constant millimolar (in i_NaK)
+Km_Na = 40.0
+#  Nai half-saturation constant millimolar (in i_NaK)
+PNaK = 1.362*1.818
+# maxiaml nak pA_per_pF (in i_NaK)
+INaK = (1.0 - parameters.INaK_Block) * PNaK*((Ko*Nai)/((Ko+Km_K)*(Nai+Km_Na)*(1.0+0.1245*exp(-0.1*V*F/(R*T))+0.0353*exp(-V*F/(R*T)))))
+
+
+#
+# Sodium Calcium exchanger
+#
+
+[inaca]
+use extra.Cao as Cao
+use extra.Nao as Nao
+use membrane.V as V
+use calcium.uCa_sr as Ca_sr
+use common.vf as vf
+## Na+/Ca2+ Exchanger current (INaCa):
+# Ten Tusscher formulation
+KmCa = 1.38
+# Cai half-saturation constant millimolar (in i_NaCa)
+KmNai = 87.5
+# Nai half-saturation constnat millimolar (in i_NaCa)
+Ksat = 0.1
+# saturation factor dimensionless (in i_NaCa)
+gamma = 0.35*2
+# voltage dependence parameter dimensionless (in i_NaCa)
+alpha = 2.5*1.1
+#factor to enhance outward nature of inaca dimensionless (in i_NaCa)
+kNaCa = 1000*1.1
+# maximal inaca pA_per_pF (in i_NaCa)
+
+
+
+INaCa = (1.0 - parameters.INCX_Block) * kNaCa*((exp(gamma*V*phys.F/(phys.R*phys.T))*(sodium.Nai^3.0)*Cao)-(exp((gamma-1.0)*V*phys.F/(phys.R*phys.T))*(Nao^3.0)*calcium.uCa_i*alpha))/(((KmNai^3.0)+(Nao^3.0))*(KmCa+Cao)*(1.0+Ksat*exp((gamma-1.0)*V*phys.F/(phys.R*phys.T))))
+
+
+[ik1]
+use membrane.V
+use extra.Ko
+use nernst.EK
+xK11=0.477994972
+xK12=27.24275588
+xK13=4.925023318
+xK14=8.7222376
+xK15=56.6361975
+x_K1=0.133785778
+
+alpha_xK1=xK11*exp((V+xK13)/xK12)
+beta_xK1=exp((V+xK15)/xK14)
+XK1_inf=alpha_xK1/(alpha_xK1+beta_xK1)
+
+g_K1=x_K1
+IK1 = (1.0 - parameters.IK1_Block) * (g_K1*XK1_inf*(V-EK)*sqrt(Ko/5.4))
+
+
+#
+# IKr
+# The rapid component of the delayed rectifier potassium current (IKr)
+# Described in section I
+#
+# This current is modelled with a time-dependent activation and an
+# instantaneous inactivation. The formulation is taken from the HRd2004 model.
+#
+#Implemented based on Kernik et al. J Pysiol 2019 (human IPSC-CM model)
+[ikr]
+Xr1_1 = 0.005748852
+Xr1_2 = 13.62349264
+Xr1_5 = 0.047630571
+Xr1_6 = -7.06808743
+Xr1_3=Xr1_5*Xr1_1
+Xr1_4=1/((1/Xr1_2)+(1/Xr1_6))
+
+Xr2_1 = 0.012456641
+Xr2_2 = -25.99445816
+Xr2_5 = 37.34263315
+Xr2_6 = 22.09196424
+Xr2_3=Xr2_5*Xr2_1
+Xr2_4=1/((1/Xr2_2)+(1/Xr2_6))
+
+use membrane.V as V
+Gbar = 0.218025 [mS/uF]
+G = Gbar * sqrt(extra.Ko / 5.4)
+    in [mS/uF]
+    desc: Maximum conductivity of IKr
+dot(a)  = (inf - a) / tau_Xr1
+    alpha_Xr1 = Xr1_1*exp(V/Xr1_2)
+    beta_Xr1 = Xr1_3*exp(V/Xr1_4)
+    inf=alpha_Xr1/(alpha_Xr1 + beta_Xr1)
+    tau_Xr1=((1/(alpha_Xr1 + beta_Xr1))+ 50)
+    desc: Activation of IKr
+
+dot(i)  = (inf_i - i) / tau_Xr2
+    alpha_Xr2 = Xr2_1*exp(V/Xr2_2)
+    beta_Xr2 = Xr2_3*exp(V/Xr2_4)
+    inf_i=alpha_Xr2/(alpha_Xr2 + beta_Xr2)
+    tau_Xr2=((1/(alpha_Xr2 + beta_Xr2))+ 0)
+    desc: Inactivation of IKr
+IKr = (1.0 - parameters.IKr_Block) * (G * a * i * (V - nernst.EK))
+    desc: Rapid delayed rectifier Potassium current
+    in [uA/uF]
+
+#
+# IKur (IKp) :: The plateau potassium current
+# Described in section K
+#
+[ikur]
+use membrane.V as V
+Gbar = 2.76e-3
+IKur = (1.0 - parameters.IKur_Block) * Gbar * K * (V - nernst.EK)
+    K = 1 / (1 + exp((7.488 - V) / 5.98))
+    desc: The plateau potassium current
+    in [uA/uF]
+
+#
+# Ito (Ito1) :: The "4AP-sensitive transient outward K+ current, uA/uF"
+# Described in section D
+#
+[ito]
+use membrane.V as V
+use nernst.EK
+#define parameters from xTO
+r1=0.055361418
+r2=11.68420234
+r5=3.98918108
+r6=-11.0471393
+
+s1=0.000344231
+s2=-17.63447229
+s5=186.7605369
+s6=8.180933873
+
+tau_r_const=0.696758421
+tau_s_const=11.22445772
+
+#parameter-dependent values:
+r3=r5*r1
+r4=1/((1/r2)+(1/r6))
+s3=s5*s1
+s4=1/((1/s2)+(1/s6))
+
+# 17: s (dimensionless) (inactivation in i_to)
+alpha_s=s1*exp(V/s2)
+beta_s=s3*exp(V/s4)
+s_inf=alpha_s/(alpha_s+beta_s)
+tau_s=((1/(alpha_s+beta_s))+tau_s_const)
+dot(S) = (s_inf-S)/tau_s
+
+# 18: r (dimensionless) (activation in i_to)
+alpha_r=r1*exp(V/r2)
+beta_r=r3*exp(V/r4)
+r_inf=alpha_r/(alpha_r+ beta_r)
+tau_r=(1/(alpha_r+ beta_r))+tau_r_const
+dot(R) = (r_inf-R)/tau_r
+
+#Current:
+g_to = 0.117833333 
+# nS_per_pF (in i_to)
+ITo = (1.0 - parameters.Ito_Block) * g_to*(V-EK)*S*R
+
+
+#
+# Background Calcium Current
+# Described in section M
+#
+[icab]
+use membrane.V as V
+use nernst.ECa as E_Ca
+## Background Calcium (I_bCa):
+# Ten Tusscher formulation
+gCab = 0.000592*0.62   
+# nS_per_pF (in i_b_Ca)
+ICab = gCab*(V-E_Ca)
+
+
+#
+# The Sarcolemmal Calcium Pump
+# Described in section L
+#
+
+[ipca]
+use calcium.uCa_i as Cai
+## Calcium SL Pump (IpCa):
+# Ten Tusscher formulation
+GpCa = 0.025*10.5  
+# pA_per_pF (in IpCa)
+KpCa = 0.0005   
+# millimolar (in IpCa)
+IpCa = GpCa*Cai/(Cai+KpCa)
+
+#
+# Cotransporters
+# Described in sections H and N
+#
+
+
+#
+# Ca2+ release from JSR to myoplasm
+# Described in section P (SR Release)
+#
+
+[irel]
+use calcium.uCa_sr as Ca_sr
+use calcium.uCa_i as Cai
+use cell.v_sr as v_sr
+use cell.v_cyt as Vc
+## SR Release/RYR (J_rel):
+# re-fit parameters. scaled to account for differences in calcium concentration in
+
+# cleft (cleft is used in shannon-bers model geometry, not in this model geometry)
+ks = 12.5
+# [1/ms]
+koCa = 56320*11.43025
+# [mM^-2 1/ms]  
+kiCa = 54*0.3425
+# [1/mM/ms]
+kom = 1.5*0.1429
+# [1/ms]
+kim = 0.001*0.5571
+# [1/ms]
+ec50SR = 0.45
+MaxSR = 15
+MinSR = 1
+
+kCaSR = MaxSR - (MaxSR-MinSR)/(1+(ec50SR/Ca_sr)^2.5)
+koSRCa = koCa/kCaSR
+kiSRCa = kiCa*kCaSR
+RI = 1-R-O-I
+
+dot(R) =(kim*RI-kiSRCa*Cai*R)-(koSRCa*Cai^2*R-kom*O)
+# R
+dot(O) =(koSRCa*Cai^2*R-kom*O)-(kiSRCa*Cai*O-kim*I)
+# O
+dot(I) =(kiSRCa*Cai*O-kim*I)-(kom*I-koSRCa*Cai^2*RI)
+# I
+
+Irel= ks*O*(Ca_sr-Cai)*(v_sr/Vc)
+
+    
+[If]
+use membrane.V as V
+use nernst.EK as E_K
+use nernst.ENa as E_Na
+## Funny/HCN current (If):
+#define parameters from x_F
+xF1=5.79E-07
+xF2=-14.58971217
+xF5=20086.65024
+xF6=10.20235285
+xF_const=23.94529135
+
+#parameter-dependent values:
+xF3=xF5*xF1
+xF4=1/((1/xF2)+(1/xF6))
+
+# 16: Xf (dimensionless) (inactivation in i_f)
+alpha_Xf=xF1*exp(V/xF2)
+beta_Xf=xF3*exp(V/xF4)
+Xf_inf=alpha_Xf/(alpha_Xf+beta_Xf)
+tau_Xf=((1/(alpha_Xf+beta_Xf))+xF_const)
+dot(Xf) = (Xf_inf-Xf)/tau_Xf
+
+#Current:
+g_f=0.0435 
+# nS_per_pF (in i_f)
+NatoK_ratio=.491 
+#Verkerk et al. 2013
+Na_frac=NatoK_ratio/(NatoK_ratio+1)
+i_fNa=Na_frac*g_f*Xf*(V-E_Na)
+i_fK=(1-Na_frac)*g_f*Xf*(V-E_K)
+i_f=i_fNa+i_fK
+
+[iup]
+use calcium.uCa_i as Cai
+## SR Uptake/SERCA (J_up):
+# Ten Tusscher formulation
+Kup = 0.00025*0.702
+# millimolar (in calcium_dynamics)
+VmaxUp =0.000425 * 0.26   
+# millimolar_per_milisecond (in calcium_dynamics)
+i_up =VmaxUp/(1.0+Kup^2.0/Cai^2.0)
+
+[ileak]
+use calcium.uCa_i as Cai
+use calcium.uCa_sr as Ca_sr
+## SR Leak (J_leak):
+# Ten Tusscher formulation
+V_leak = 1*0.00008*0.02  
+# per_millisecond (in calcium_dynamics)
+i_leak = (Ca_sr-Cai)*V_leak
+
+[[protocol]]
+# Level  Start    Length   Period   Multiplier
+1.0      100      0.5      1000     0
+
+[[script]]
+import matplotlib.pyplot as plt
+import numpy as np
+import myokit
+
+#
+# The following example shows how to apply a step protocol without changing
+# the model definition code. Instead, all necessary changes are applied through
+# API calls.
+#
+
+# Get model and protocol, create simulation
+m = get_model()
+
+# Get pacing variable
+p = m.get('engine.pace')
+# Remove binding to pacing mechanism
+p.set_binding(None)
+# Get membrane potential
+v = m.get('membrane.V')
+# Demote v from a state to an ordinary variable
+v.demote()
+v.set_rhs(0)
+
+K_i = m.get('potassium.K_i')
+# Demote v from a state to an ordinary variable
+K_i.demote()
+K_i.set_rhs(0)
+
+# Bind v's value to the pacing mechanism
+v.set_binding('pace')
+
+# Create a step protocol
+p = myokit.Protocol()
+steps = np.arange(-50.01,40.01,10)
+for it in steps:
+	p.add_step(-80,900)
+	p.add_step(-70,100)
+	p.add_step(it, 4000)
+	p.add_step(-70,3500)
+t = p.characteristic_time()
+
+
+# Run a simulation
+s = myokit.Simulation(m, p)
+s.set_constant('extra.Ko',5.4)
+s.set_constant('potassium.K_i',150)
+d = s.run(t, log=['engine.time', 'membrane.V', 'ikr.IKr'])
+
+
+s2 = myokit.Simulation(m,p)
+s2.set_constant('extra.Ko',5.4)
+d2 = s2.run(t, log=['engine.time', 'membrane.V', 'ikr.IKr'])
+
+#plt.figure()
+#plt.plot(d['engine.time'], d['membrane.V'])
+
+## Split the log into smaller chunks
+ds = d.split_periodic(8500, adjust=True)
+
+# Trim each new log to contain only the 5ms of peak current
+amp = np.zeros(len(steps))
+for k, d in enumerate(ds):
+    temp = d.trim_left(5000, adjust=True).trim_right(3500)
+    ds[k]=temp
+    maxval = np.max(temp['ikr.IKr'])
+    minval = np.min(temp['ikr.IKr'])
+    amp[k] = maxval-minval
+  
+        
+
+ds2 = d2.split_periodic(8500, adjust=True)
+
+# Trim each new log to contain only the 5ms of peak current
+amp2 = np.zeros(len(steps))
+for k, d2 in enumerate(ds2):
+    temp = d2.trim_left(5000, adjust=True).trim_right(3500)
+    ds2[k]=temp
+    maxval = np.max(temp['ikr.IKr'])
+    minval = np.min(temp['ikr.IKr'])
+    amp2[k] = maxval-minval
+
+ 
+
+
+# Show the results
+plt.figure()
+plt.subplot(2,1,1)
+for k, d in enumerate(ds):
+    label = str(steps[k]) + ' mV'    
+    plt.plot(d['engine.time'], d['ikr.IKr'], label=label)
+plt.legend(loc='lower right')
+
+plt.subplot(2,1,2)
+for k, d2 in enumerate(ds2):
+    label = str(steps[k]) + ' mV'    
+    plt.plot(d2['engine.time'], d2['ikr.IKr'], label=label)
+plt.legend(loc='lower right')
+
+plt.show()
+
+Exp_Data_Vm = np.arange(-60,30,10)
+Exp_Data_IKr = [-0.0016703,0.46822,1.0212,1.7901, 2.2821,2.431,2.436,2.4853,2.4958]
+
+Exp_Data_Vm2 = np.arange(-50,50,10)
+Exp_Data_IKr2 = [0.014421,0.030451,0.15169,0.56625,1.0694,1.3954,1.4834,1.5105,1.5377, 1.5703]
+
+
+plt.figure()
+plt.plot(steps,amp, '-k', steps,amp2, '-r', Exp_Data_Vm, Exp_Data_IKr, 'ok', Exp_Data_Vm2, Exp_Data_IKr2, 'or')
+

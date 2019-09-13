@@ -12,7 +12,7 @@ import os
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1803, 980)
+        MainWindow.resize(1853, 980)
         icon = QtGui.QIcon()
         iconDir = os.path.dirname(os.path.abspath(__file__))
         icon.addPixmap(QtGui.QPixmap(iconDir + os.path.sep + 'MANTA_icon.ico'), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -689,7 +689,7 @@ class Ui_MainWindow(object):
         self.label_20.setObjectName("label_20")
         self.formLayout.setWidget(7, QtWidgets.QFormLayout.LabelRole, self.label_20)
         self.xaxis_mdl1_to = QtWidgets.QDoubleSpinBox(self.tab_6)
-        self.xaxis_mdl1_to.setMaximum(9999.0)
+        self.xaxis_mdl1_to.setMaximum(999999.0)
         self.xaxis_mdl1_to.setProperty("value", 1000.0)
         self.xaxis_mdl1_to.setObjectName("xaxis_mdl1_to")
         self.formLayout.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.xaxis_mdl1_to)
@@ -711,7 +711,7 @@ class Ui_MainWindow(object):
         self.label_23.setObjectName("label_23")
         self.formLayout.setWidget(11, QtWidgets.QFormLayout.LabelRole, self.label_23)
         self.xaxis_mdl2_to = QtWidgets.QDoubleSpinBox(self.tab_6)
-        self.xaxis_mdl2_to.setMaximum(9999.0)
+        self.xaxis_mdl2_to.setMaximum(999999.0)
         self.xaxis_mdl2_to.setProperty("value", 1000.0)
         self.xaxis_mdl2_to.setObjectName("xaxis_mdl2_to")
         self.formLayout.setWidget(11, QtWidgets.QFormLayout.FieldRole, self.xaxis_mdl2_to)
@@ -1796,7 +1796,7 @@ class Ui_MainWindow(object):
         self.gridLayout_3.addWidget(self.frameOutput2, 0, 2, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1803, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1853, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -1930,7 +1930,7 @@ class Ui_MainWindow(object):
         self.tabGeneral.setTabText(self.tabGeneral.indexOf(self.tab_10), _translate("MainWindow", "IC50"))
         self.cmdRun.setText(_translate("MainWindow", "Run"))
         self.cmdReset.setText(_translate("MainWindow", "Reset Values"))
-        self.label.setText(_translate("MainWindow", "v1.1.2 == Heijman\'s Lab == 2019"))
+        self.label.setText(_translate("MainWindow", "v1.1.4 == Heijman\'s Lab == 2019"))
         self.lblModel1.setText(_translate("MainWindow", "Model:"))
         self.aad2_mdl1_bottom.setText(_translate("MainWindow", "AAD2"))
         self.lblAPDCaTModel1Ctrl.setText(_translate("MainWindow", "REF - APD: xxx ms // dV/dt_max: xxx mV/ms // CaT: xxx nM"))
@@ -2015,5 +2015,4 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
 
