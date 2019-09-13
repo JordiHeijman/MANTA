@@ -39,9 +39,4 @@ For a user guide, please see the [supporting material to our publication](https:
 
 ## For developers
 
-To install a developer version of manta:
-
-1. Clone this repository onto your local machine.
-2. Navigate to your copy of repository (so that you're in same the directory that this README file is is).
-3. Install using `pip install -e .`.
-4. Install PyQt5 using `pip install pyqt5` or any other method.
+Some instructions for developers (including installating from the repo) are given in [CONTRIBUTING.md](./CONTRIBUTING.md).
