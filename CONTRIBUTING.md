@@ -15,8 +15,9 @@ Before you do this, make sure everything's working correctly.
 You can only upload a specific version **once**.
 (You can also upload to a test repository, using `twine upload --repository-url https://test.pypi.org/legacy/ dist/*`)
 
-1. Create a "wheel", using `python setup.py sdist bdist_wheel`
-2. Upload with `twine upload dist/*`
+1. Check that the version number is correct, and follows the `major.minor.revision` format
+2. Create a "wheel", using `python setup.py sdist bdist_wheel`
+3. Upload with `twine upload dist/*`
 
 Verify that everything's working:
 
