@@ -1930,7 +1930,7 @@ class Ui_MainWindow(object):
         self.tabGeneral.setTabText(self.tabGeneral.indexOf(self.tab_10), _translate("MainWindow", "IC50"))
         self.cmdRun.setText(_translate("MainWindow", "Run"))
         self.cmdReset.setText(_translate("MainWindow", "Reset Values"))
-        self.label.setText(_translate("MainWindow", "v1.1.4 == Heijman\'s Lab == 2019"))
+        self.label.setText(_translate("MainWindow", "v1.1.5 == Heijman\'s Lab == 2019"))
         self.lblModel1.setText(_translate("MainWindow", "Model:"))
         self.aad2_mdl1_bottom.setText(_translate("MainWindow", "AAD2"))
         self.lblAPDCaTModel1Ctrl.setText(_translate("MainWindow", "REF - APD: xxx ms // dV/dt_max: xxx mV/ms // CaT: xxx nM"))

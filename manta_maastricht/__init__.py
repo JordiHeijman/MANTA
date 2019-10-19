@@ -1159,10 +1159,10 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                 #Diast_ref = np.min(data1_ref_temp['output.Cai'])
                 dvdt_ref = np.diff(data1_ref_temp['output.Vm']) / np.diff(data1_ref_temp[model1.time()])
                 dvdtmax_ref = np.max(dvdt_ref)     
-                if len(apds1_ref) > 0:
+                if len(apds1_ref['duration']) > 0:
                     self.lblAPDCaTModel1Ctrl.setText("%s\n %.1f Hz REF - APD: %d ms // dV/dt_max: %d mV/ms // CaT: %d nM" % (self.lblAPDCaTModel1Ctrl.text(), (1000/bcl), apds1_ref['duration'][0], dvdtmax_ref, 1000*CaT_ref))
                 else:
-                    self.lblAPDCaTModel1Ctrl.setText("%s\n %.1f Hz REF - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel1Ctrl.text()), (1000/bcl))  
+                    self.lblAPDCaTModel1Ctrl.setText("%s\n %.1f Hz REF - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel1Ctrl.text(), (1000/bcl)))  
 
                 if self.checks1s2_mdl1.isChecked():
                     peakrefval = np.max(data1_ref_temp['output.Vm'])
@@ -1228,12 +1228,12 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                 #Syst_alt = np.max(data1_temp['output.Cai'])                       
                 #Diast_alt = np.min(data1_temp['output.Cai'])   
                 dvdt_alt = np.diff(data1_temp['output.Vm']) / np.diff(data1_temp[model1.time()])
-                dvdtmax_alt = np.max(dvdt_alt)                               
+                dvdtmax_alt = np.max(dvdt_alt)                             
                 #self.lblAPDCaTModel2Alt.setText('APD: ' + str(apds2_alt[0]) + ' ms / CaT: ' + str(CaT_alt) + ' uM')
-                if len(apds1_alt) > 0:
+                if len(apds1_alt['duration']) > 0:
                     self.lblAPDCaTModel1Alt.setText("%s\n %.1f Hz AAD1 - APD: %d ms // dV/dt_max: %d mV/ms // CaT: %d nM" % (self.lblAPDCaTModel1Alt.text(), (1000/bcl), apds1_alt['duration'][0], dvdtmax_alt, 1000*CaT_alt))
                 else:
-                    self.lblAPDCaTModel1Alt.setText("%s\n %.1f Hz AAD1 - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel1Alt.text()), (1000/bcl))            
+                    self.lblAPDCaTModel1Alt.setText("%s\n %.1f Hz AAD1 - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel1Alt.text(), (1000/bcl)))            
                 
                 if self.checks1s2_mdl1.isChecked():
                     peakrefval = np.max(data1_temp['output.Vm'])
@@ -1297,10 +1297,10 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                 dvdtb_alt = np.diff(data1b_temp['output.Vm']) / np.diff(data1b_temp[model1.time()])
                 dvdtmaxb_alt = np.max(dvdtb_alt)                                   
                 #self.lblAPDCaTModel2Alt.setText('APD: ' + str(apds2_alt[0]) + ' ms / CaT: ' + str(CaT_alt) + ' uM')
-                if len(apds1b_alt) > 0:
+                if len(apds1b_alt['duration']) > 0:
                     self.lblAPDCaTModel1Alt_2.setText("%s\n %.1f Hz AAD2 - APD: %d ms // dV/dt_max: %d mV/ms // CaT: %d nM" % (self.lblAPDCaTModel1Alt_2.text(), (1000/bcl), apds1b_alt['duration'][0], dvdtmaxb_alt, 1000*CaTb_alt))
                 else:
-                    self.lblAPDCaTModel1Alt_2.setText("%s\n %.1f Hz AAD2 - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel1Alt_2.text()), (1000/bcl))            
+                    self.lblAPDCaTModel1Alt_2.setText("%s\n %.1f Hz AAD2 - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel1Alt_2.text(), (1000/bcl)))            
                 
                 if self.checks1s2_mdl1.isChecked():
                     peakrefval = np.max(data1b_temp['output.Vm'])
@@ -1384,10 +1384,10 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                 #Diast2_ref = np.min(data2_ref_temp['output.Cai'])            
                 dvdt2_ref = np.diff(data2_ref_temp['output.Vm']) / np.diff(data2_ref_temp[model2.time()])
                 dvdtmax2_ref = np.max(dvdt2_ref) 
-                if len(apds2_ref) > 0:
+                if len(apds2_ref['duration']) > 0:
                     self.lblAPDCaTModel2Ctrl.setText("%s\n %.1f Hz REF - APD: %d ms // dV/dt_max: %d mV/ms // CaT: %d nM" % (self.lblAPDCaTModel2Ctrl.text(), (1000/bcl), apds2_ref['duration'][0], dvdtmax2_ref, 1000*CaT2_ref))
                 else:
-                    self.lblAPDCaTModel2Ctrl.setText("%s\n %.1f Hz REF - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel2Ctrl.text()), (1000/bcl))  
+                    self.lblAPDCaTModel2Ctrl.setText("%s\n %.1f Hz REF - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel2Ctrl.text(), (1000/bcl)))  
 
                 if self.checks1s2_mdl2.isChecked():
                     peakrefval = np.max(data2_ref_temp['output.Vm'])
@@ -1450,10 +1450,10 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                 #Diast2_alt = np.min(data2_temp['output.Cai'])            
                 dvdt2_alt = np.diff(data2_temp['output.Vm']) / np.diff(data2_temp[model2.time()])
                 dvdtmax2_alt = np.max(dvdt2_alt)                     
-                if len(apds2_alt) > 0:
+                if len(apds2_alt['duration']) > 0:
                     self.lblAPDCaTModel2Alt.setText("%s\n %.1f Hz AAD1 - APD: %d ms // dV/dt_max: %d mV/ms // CaT: %d nM" % (self.lblAPDCaTModel2Alt.text(), (1000/bcl), apds2_alt['duration'][0], dvdtmax2_alt, 1000*CaT2_alt))
                 else:
-                    self.lblAPDCaTModel2Alt.setText("%s\n %.1f Hz AAD1 - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel2Alt.text()), (1000/bcl))            
+                    self.lblAPDCaTModel2Alt.setText("%s\n %.1f Hz AAD1 - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel2Alt.text(), (1000/bcl)))            
                 
                 if self.checks1s2_mdl2.isChecked():
                     peakrefval = np.max(data2_temp['output.Vm'])
@@ -1516,10 +1516,10 @@ class MyWindowClass(QtWidgets.QMainWindow, Qt5file.Ui_MainWindow):
                 #Diast2b_alt = np.min(data2b_temp['output.Cai'])                     
                 dvdt2b_alt = np.diff(data2b_temp['output.Vm']) / np.diff(data2b_temp[model2.time()])
                 dvdtmax2b_alt = np.max(dvdt2b_alt)                       
-                if len(apds2b_alt) > 0:
+                if len(apds2b_alt['duration']) > 0:
                     self.lblAPDCaTModel2Alt_2.setText("%s\n %.1f Hz AAD2 - APD: %d ms // dV/dt_max: %d mV/ms // CaT: %d nM" % (self.lblAPDCaTModel2Alt_2.text(), (1000/bcl), apds2b_alt['duration'][0], dvdtmax2b_alt, 1000*CaTb_alt))
                 else:
-                    self.lblAPDCaTModel2Alt_2.setText("%s\n %.1f Hz AAD2 - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel2Alt_2.text()), (1000/bcl))            
+                    self.lblAPDCaTModel2Alt_2.setText("%s\n %.1f Hz AAD2 - APD: ? ms // dV/dt_max: ? mV/ms // CaT: ? nM" % (self.lblAPDCaTModel2Alt_2.text(), (1000/bcl)))            
                 
                 if self.checks1s2_mdl2.isChecked():
                     peakrefval = np.max(data2b_temp['output.Vm'])
