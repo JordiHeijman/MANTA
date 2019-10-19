@@ -31,7 +31,7 @@ setup(
     name='manta_maastricht',
 
     # Version number
-    version='1.1.4',
+    version='1.1.5',
 
     # Descriptions
     url='http://www.jordiheijman.net/',
