@@ -1,3 +1,7 @@
+# Version 1.2.1
+Content Update(s):
+- Human LV epicardial and endocardial models (TenTusscher-2004) have been added to MANTA
+
 # Version 1.1.5
 Technical Update(s):
 - Bugfix to crash if APD not found
